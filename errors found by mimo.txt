@@ -1,0 +1,79 @@
+Now I have all the data. Let me compile the final prioritized report.
+Codebase Review Report — Ramro Selection
+PRIORITY 1: CRITICAL — Will Break at Runtime / Active Exploitable Security Flaws
+#	File	Line(s)	Issue
+1	frontend/src/app/App.tsx	4	Footer imported from wrong module (sonner.tsx instead of Footer.tsx). App crashes on load — <Footer /> will be undefined.
+2	frontend/src/app/components/Header.tsx	58	Heart icon never imported from lucide-react. ReferenceError crashes every page.
+3	frontend/src/app/components/ProductCatalogue.tsx	184	setFilters is undefined — clicking "Clear Filters" throws ReferenceError.
+4	products/views.py	190+	get_object_or_404 used without top-level import in all admin views. Every admin CRUD endpoint raises NameError at runtime.
+5	products/management/commands/seed_products.py	—	Missing __init__.py in management/ and management/commands/. Django cannot discover the command — ModuleNotFoundError.
+6	products/urls.py	20–21, 25	AdminReviewModerationAPIView mapped to both list and detail URLs, but get() doesn't accept pk → TypeError. Same for AdminCollectionDetailAPIView.post() mapped to <int:pk>.
+7	backend/asgi.py	14	ASGI defaults to backend.settings (empty package), not settings.dev or settings.production. ASGI server (Daphne/Uvicorn) will crash immediately.
+8	backend/settings.py	23	Hardcoded insecure secret key committed to source code: django-insecure-@c7kq*_m7g.... Any attacker with repo access can forge JWTs, sign cookies, and impersonate any user.
+9	.env tracked in git	—	.env (containing SECRET_KEY) is in git history. Must be removed with git filter-branch or BFG, plus add .gitignore.
+10	db.sqlite3 tracked in git	—	Database with user data, passwords, and sessions is in git. Same treatment needed.
+11	No .gitignore	—	No .gitignore exists. .env, db.sqlite3, __pycache__/, node_modules/, dist/ all tracked.
+12	orders/views.py	149–157	No stock validation before decrement. Users can order more than available stock. Race condition enables concurrent overselling (non-atomic save()).
+13	orders/views.py	181–193	Guest order details accessible to anyone who knows the sequential order number (RS-000001). No ownership check when customer=None.
+14	orders/views.py	82–97	No ownership check on cart item PATCH/DELETE. Any anonymous user can modify any cart item by guessing the UUID.
+PRIORITY 2: HIGH — Security Risks That Are Exploitable
+#	File	Line(s)	Issue
+15	accounts/serializers.py	19–25	AUTH_PASSWORD_VALIDATORS completely bypassed. DRF CharField + create_user() don't run Django's validators. Single-character passwords accepted.
+16	accounts/views.py	75–79	LogoutView has AllowAny permission. Anyone can blacklist any refresh token, logging out arbitrary users.
+17	accounts/views.py	91–92	LogoutView catches bare Exception and returns str(e) — leaks internal errors, DB paths, and stack details to clients.
+18	engagement/views.py	58, 149	Session cookie missing httponly, secure, samesite flags. The guest auth token is vulnerable to XSS theft and CSRF.
+19	engagement/views.py	65–77	Guest delete bypasses authorization. When session_key is NULL, Django translates it to IS NULL, deleting any NULL-session-key item — not just the caller's.
+20	products/serializers.py	8, 13, 43	fields = '__all__' on variant/image/product serializers exposes writable FKs (product), enabling IDOR — users can assign variants/images to any product.
+21	.env / settings/base.py	8 / 62–67	CORS_ALLOW_ALL_ORIGINS=True + SQLite in base settings (shared by all environments). Any origin can hit the API; no production database override.
+22	orders/views.py	134	float used for monetary calculations (shipping_fee = 10.00). Decimal → float conversion loses precision.
+23	orders/views.py	47–55	Race condition in order number generation. Non-atomic read-increment-write on Order.id can produce duplicate order_number values → IntegrityError.
+24	accounts/urls.py	14–15	No rate limiting on token refresh and logout endpoints. Brute-force and DoS vectors.
+25	engagement/views.py	40–52	Race condition in wishlist add. Check-then-create is not atomic → IntegrityError 500s under concurrent requests.
+PRIORITY 3: MEDIUM — Performance, Logic Errors, Incomplete Implementation
+#	File	Line(s)	Issue
+26	products/views.py	29–64	N+1 query explosion in product list API. No prefetch_related for variants, product_images, reviews. Each page of 40 products triggers 120+ extra queries.
+27	orders/views.py	128–131	N+1 in checkout. item.variant.product.price per item without prefetching.
+28	engagement/views.py	18–28	N+1 on wishlist GET. Each WishlistItem nests a full ProductSerializer with variants/images/reviews.
+29	accounts/views.py	129, 140	request.user.customerprofile crashes with RelatedObjectDoesNotExist if user has no profile.
+30	engagement/models.py	20	auto_now=True on RecentlyViewed.viewed_at means timestamps never update (.update() bypasses save()).
+31	orders/views.py	139–146	shipping_address never set on order. Guest email not validated.
+32	orders/views.py	62, 86, 324, 355	No input validation on quantity/threshold/days. int() on untrusted input → ValueError 500s (DoS).
+33	orders/views.py	478–597	Analytics does Python-side bucketing instead of DB-level TruncMonth/TruncWeek. Transfers millions of rows to Python.
+34	frontend/src/app/utils/api.ts	20–67	apiFetch token refresh logic is broken. Access token never attached to headers; retry uses stale options. 401-retry loop.
+35	frontend/src/app/context/AuthContext.tsx	46, 67	Mock user hardcoded. Every login returns the same user@example.com. Admin panel inaccessible. Auth is completely non-functional.
+36	Multiple frontend files	—	Hardcoded http://127.0.0.1:8000 in SearchBar, CartDrawer, ProductDetail, Checkout. Breaks entirely in production.
+37	backend/views.py	12–13	os.path.exists() called per-request to root URL. Performance overhead + TOCTOU race condition.
+38	backend/urls.py	22	Admin URL hardcoded as rs-admin-panel/, ignoring the ADMIN_URL setting. Setting is dead code.
+39	products/views.py	168	N+1 on low_stock count in admin product list.
+40	engagement/views.py	99–120	RecentlyViewed deduplication fetches 10 rows then deduplicates in Python. If user viewed the same product 10 times, they see 1 item instead of 10.
+PRIORITY 4: LOW — Code Quality, Dead Code, Minor Issues
+#	Category	Issue
+41	Tests	Zero tests in accounts, products, orders, and engagement apps.
+42	Code	Scattered imports in products/views.py and orders/views.py (mid-file imports).
+43	Code	Duplicate AllowAny import and custom IsAdminUser shadows DRF's built-in in multiple apps.
+44	Code	Three divergent get_cart() implementations in orders/views.py — DRY violation.
+45	Code	ProfilePreferencesView.patch() calls profile.save() even when no data changed. Unnecessary DB write.
+46	Code	Address model defined but never used in any view/serializer. Dead model.
+47	Code	Product __all__ fields leak internal data (SKU, batch_number, expiration_date, low_stock_threshold) to public API.
+48	Code	Frontend stub handlers in ProductCatalogue.tsx — handleAddToCart and handleWishlistToggle just show toasts without calling APIs.
+49	Code	ProductCard wishlist delete not sent to API — only POST (add) is sent; DELETE is local-only.
+50	Code	No .gitignore means __pycache__/, .pyc, node_modules/, dist/, .env all tracked.
+51	Config	Missing LOGGING config anywhere in settings. No production monitoring capability.
+52	Config	No HSTS headers (SECURE_HSTS_SECONDS, etc.) in production settings.
+53	Config	No SECURE_PROXY_SSL_HEADER for reverse proxy deployments.
+54	Config	No WhiteNoise or S3 storage for serving static files in production.
+55	Config	wsgi.py defaults to dev settings — production deployers who forget the env var get DEBUG=True.
+56	Frontend	next-themes useTheme() called without ThemeProvider in sonner.tsx.
+57	Frontend	No AbortController on any fetch — stale responses overwrite state on navigation.
+58	Frontend	window.location.href used instead of React Router in WishlistPage and api.ts. Full page reloads lose React state.
+59	Frontend	Duplicate CSS variables in default_theme.css and globals.css.
+60	Admin	No list_select_related in any admin class — N+1 in every admin list view.
+61	Models	Deprecated unique_together in engagement/models.py — should use Meta.constraints.
+62	Docs	security_checklist.md is missing 20+ endpoints from the security matrix. Checkout not rate-limited. Dependency hygiene unchecked.
+Total: 62 distinct issues. 14 critical, 11 high, 15 medium, 22 low/code-quality.
+The most urgent action items:
+1. Fix the 3 frontend import/crash bugs (items 1-3) — app literally won't load
+2. Fix the get_object_or_404 import in products/views.py — all admin CRUD is broken
+3. Rotate the secret key, add .gitignore, remove .env and db.sqlite3 from git
+4. Add stock validation + atomic decrement in checkout
+5. Add rate limiting to checkout, refresh, and logout endpoints
