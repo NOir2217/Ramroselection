@@ -1,0 +1,270 @@
+RAMRO SELECTION — PROJECT PROGRESS & CHANGES LOG
+
+===============================================================
+PHASE 1 — DATA MODEL OVERHAUL: COMPLETE
+Date Completed: 2026-07-01
+===============================================================
+
+STEP 1.1 — Extend Product Model (COMPLETE)
+───────────────────────────────────────────
+Files changed:
+  - products/models.py
+  - products/views.py
+  - products/admin.py
+  - products/migrations/0001_initial.py (regenerated)
+
+Changes:
+  - Deleted old db.sqlite3 and migration file for clean reset.
+  - Created 'Category' model with self-referential parent hierarchy and slug.
+  - Updated 'Product' model:
+    - category changed from CharField to ForeignKey -> Category.
+    - Added: description, brand, product_type (clothing/cosmetics/other),
+      material_or_ingredients, is_vegan, is_cruelty_free, is_hypoallergenic,
+      season, fit, skin_type, finish, sku (unique), slug (unique).
+  - Created 'ProductVariant' model:
+    - variant_type (size_color, shade_finish_volume).
+    - size, color, color_hex, shade, shade_hex, volume.
+    - stock_quantity, low_stock_threshold, extra_price, sku_suffix.
+    - batch_number, expiration_date (cosmetics).
+  - Created 'ProductImage' model:
+    - image_url, image_type (primary/angle/swatch/on_model/user_upload), display_order.
+    - Optional variant FK for color/shade-specific images.
+  - Created 'SizeGuide' model:
+    - category FK, brand, chart_data (JSONField).
+  - Fixed api_products view to serialize p.category.name instead of FK object.
+  - Registered all models in admin with ProductVariantInline and ProductImageInline.
+  - Created superuser: admin / admin.
+
+STEP 1.2 — User & Profile Models (COMPLETE)
+─────────────────────────────────────────────
+Files changed:
+  - accounts/ (new app)
+  - accounts/models.py
+  - accounts/admin.py
+  - accounts/migrations/0001_initial.py
+  - backend/settings.py
+
+Changes:
+  - Created 'accounts' Django app; registered in INSTALLED_APPS.
+  - 'CustomerProfile' model: user (OneToOne -> User, nullable), email, default_size,
+    skin_type, is_vip (default False), phone.
+  - 'Address' model: profile (FK, nullable), full_name, phone, street, city,
+    postal_code, country, is_default.
+  - AddressInline inside CustomerProfileAdmin.
+
+STEP 1.3 — Cart & Order Models (COMPLETE)
+───────────────────────────────────────────
+Files changed:
+  - orders/ (new app)
+  - orders/models.py
+  - orders/admin.py
+  - orders/migrations/0001_initial.py
+  - backend/settings.py
+
+Changes:
+  - Created 'orders' Django app; registered in INSTALLED_APPS.
+  - 'Cart' model: UUID PK (session token), customer FK (nullable), timestamps.
+  - 'CartItem' model: cart FK, variant FK, quantity.
+  - 'Order' model: auto-generated order_number (RS-000001 format via save()),
+    customer FK (nullable), guest_email, status (8 choices), shipping_address FK,
+    subtotal/discount_total/shipping_fee/total, applied_discount_code,
+    tracking_history (JSONField).
+  - 'OrderItem' model: order FK, variant FK, quantity, unit_price.
+  - 'ReturnRequest' model: order_item FK, reason, status (4 choices), created_at.
+  - CartItemInline in CartAdmin, OrderItemInline in OrderAdmin.
+
+STEP 1.4 — Wishlist, Recently Viewed, Reviews, Discounts, Collections (COMPLETE)
+───────────────────────────────────────────────────────────────────────────────────
+Files changed:
+  - engagement/ (new app)
+  - engagement/models.py
+  - engagement/admin.py
+  - engagement/migrations/0001_initial.py
+  - products/models.py (Collection added)
+  - products/admin.py (CollectionAdmin added)
+  - products/migrations/0002_collection.py
+  - orders/models.py (DiscountRule added)
+  - orders/admin.py (DiscountRuleAdmin added)
+  - orders/migrations/0002_discountrule.py
+  - backend/settings.py
+
+Changes:
+  - Created 'engagement' Django app; registered in INSTALLED_APPS.
+  - 'WishlistItem' model: customer FK (nullable), session_key, product FK, added_at.
+    unique_together on (customer, product) and (session_key, product).
+  - 'RecentlyViewed' model: customer FK (nullable), session_key, product FK, viewed_at.
+  - 'Review' model: product FK, customer FK (nullable), rating (1-5), title, body,
+    photo_urls (JSONField), is_approved (default False), created_at.
+  - 'Collection' model in products: name, slug, description, banner_image_url,
+    is_active, display_order, products (M2M).
+  - 'DiscountRule' model in orders: code (nullable/unique), rule_type (4 choices),
+    config (JSONField), active_from, active_to, is_active.
+  - ReviewAdmin includes bulk "Approve selected reviews" action.
+  - CollectionAdmin uses filter_horizontal for product selection.
+
+STEP 1.5 — Update Seed Command (COMPLETE)
+───────────────────────────────────────────
+Files changed:
+  - products/management/commands/seed_products.py (full rewrite)
+
+Changes:
+  - 9 categories: Clothing + Cosmetics (root), plus Tops, Dresses, Bags,
+    Makeup, Hair, Nails, Cream (subcategories).
+  - 25 products total (12 clothing, 13 cosmetics) with:
+    - Clothing: size/color variants (variant_type='size_color').
+    - Cosmetics: shade/volume variants (variant_type='shade_finish_volume')
+      + swatch images from placehold.co.
+    - Type-specific fields populated (skin_type, finish, season, fit, etc.)
+    - Unique sku and slug per product.
+  - 64 ProductVariant rows.
+  - 84 ProductImage rows (primary, angle, on_model, swatch).
+  - 121 Review rows across 15 popular products (57 approved, 64 pending).
+  - 2 SizeGuide entries (Tops and Dresses) with inch/cm chart data.
+  - 3 DiscountRule entries: SAVE10 (10% off cosmetics), BUNDLE2 (buy 2 get 1
+    makeup), and automatic 5% storewide.
+  - 2 Collections: "New Arrivals" (8 items) and "Festive Sale" (8 items).
+
+ACCEPTANCE CHECKS PASSED:
+  - `python manage.py seed_products` exits with SUCCESS.
+  - /api/products/ returns 25 products with correct camelCase keys.
+  - Django admin shows all populated tables.
+
+===============================================================
+PHASE 1 FULLY COMPLETE — Ready to proceed to Phase 2
+===============================================================
+
+--------------------------------------------------------------------------------
+[Phase 0] Security & Infrastructure Foundations COMPLETED
+- Installed `djangorestframework`, `djangorestframework-simplejwt`, `django-cors-headers`, `python-decouple`, `django-ratelimit`.
+- Created `.env` and `.env.example` to manage secrets.
+- Split settings into `backend/settings/base.py`, `dev.py`, and `production.py`.
+- Configured JWT Authentication:
+  - Tokens expire correctly (Access: 15 min, Refresh: 7 days).
+  - Refresh token stored in an `httpOnly`, `Secure`, `SameSite=Strict` cookie.
+  - Refresh token rotation and blacklisting enabled.
+- Applied security hardening:
+  - CORS strictly configured via `CORS_ALLOWED_ORIGINS`
+  - Added security headers (`X_FRAME_OPTIONS`, `SECURE_CONTENT_TYPE_NOSNIFF`)
+  - Added HTTPS enforcements for production (`SECURE_SSL_REDIRECT`, `SESSION_COOKIE_SECURE`).
+  - Added rate-limiting (5 requests per min) to Login and Registration endpoints using `django-ratelimit`.
+- Implemented Authentication endpoints:
+  - `/api/auth/register/` -> Creates User & Profile
+  - `/api/auth/token/` -> Login, sets cookie
+  - `/api/auth/token/refresh/` -> Rotates refresh token via cookie
+  - `/api/auth/token/logout/` -> Blacklists token, clears cookie
+- Created `security_checklist.md` to track per-endpoint security status.
+- Migrations run and tested successfully.
+
+===============================================================
+PHASE 2 — CORE SHOPPING FLOW: COMPLETE
+Date Completed: 2026-07-01
+===============================================================
+
+STEP 2.1 & 2.2 — Product Detail Page (COMPLETE)
+───────────────────────────────────────────
+- Backend: Created ProductSerializer including nested Variants, Images, and Reviews.
+- Backend: Created ProductDetailAPIView retrieving product by slug.
+- Frontend: Created ProductDetail.tsx displaying Embla-style image gallery.
+- Frontend: Implemented Size and Color selectors that hook up to specific variants.
+- Frontend: Implemented Quantity stepper and "Add to Cart" button.
+- Frontend: Added Tabs for Details, Materials, Size Guide, and Reviews.
+
+STEP 2.3 & 2.4 — Shopping Cart (COMPLETE)
+───────────────────────────────────────────
+- Backend: Created Cart and CartItem serializers with computed line totals.
+- Backend: Created CartAPIView and CartItemAPIView supporting guest tokens (cookies) and authenticated users.
+- Backend: Fixed related_name 'items' referencing in Cart serializers/views.
+- Frontend: Implemented sliding CartDrawer using fixed positioned overlays and lucide-icons.
+- Frontend: Added quantity adjustment (+/-) and removal buttons calling PATCH/DELETE APIs.
+- Frontend: Integrated CartDrawer into Header.tsx, linking shopping cart icon to state.
+
+STEP 2.5 — Checkout Flow (COMPLETE)
+───────────────────────────────────────────
+- Backend: Created CheckoutAPIView transferring CartItems to OrderItems.
+- Backend: Decrements stock on ProductVariant safely within an atomic transaction.
+- Backend: Clears user Cart and outputs order_number.
+- Frontend: Created Checkout.tsx multi-step form capturing Address and Contact Info using react-hook-form.
+- Frontend: Form submission hits CheckoutAPIView and displays a successful confirmation screen on completion.
+
+ACCEPTANCE CHECKS PASSED:
+  - Add to cart for guest creates cookie and returns cart total.
+  - Cart Fetch returns cart items successfully.
+  - Patching items updates quantity properly.
+  - Checkout creates order, decrements stock, and clears the cart accurately.
+
+===============================================================
+PHASE 3 — NAVIGATION & SEARCH: COMPLETE
+Date Completed: 2026-07-01
+===============================================================
+
+STEP 3.1 & 3.2 — Predictive Search & Navigation (COMPLETE)
+───────────────────────────────────────────
+- Backend: Updated `api_products` to accept `q` (icontains search on name/brand/category).
+- Backend: Created `api_search_products` specifically for the search bar dropdown, returning quick partial results.
+- Frontend: Created `SearchBar.tsx` featuring a Radix Popover and a 300ms debounced input.
+- Frontend: Refactored `Header.tsx` to use the new `SearchBar` and dynamic category query links.
+
+STEP 3.3 — Extended Contextual Filters (COMPLETE)
+───────────────────────────────────────────
+- Backend: Added ORM filtering to `api_products` for size, color, skin_type, finish, is_vegan, and is_cruelty_free.
+- Frontend: Refactored `ProductCatalogue.tsx` to parse URL `searchParams` and pass them to the backend fetch call instead of relying on frontend-only filtering.
+- Frontend: Rebuilt `FilterPanel.tsx` to read/write directly to URL query parameters via `useSearchParams`.
+- Frontend: `FilterPanel.tsx` conditionally renders specific filters (e.g. Size/Color vs Skin Type/Finish) based on the active category param.
+
+ACCEPTANCE CHECKS PASSED:
+  - Typing in the Search Bar opens a popover with live suggestions.
+  - Clicking "Clothing" in the Header changes the URL, fetching only Clothing items and swapping the Filter Panel to show Sizes and Colors.
+  - The Filter Panel reliably appends query strings to the URL and syncs with the API properly.
+
+===============================================================
+PHASE 4 — AUTHENTICATION: COMPLETE
+Date Completed: 2026-07-01
+===============================================================
+
+STEP 4.1 — Customer Auth & UX
+───────────────────────────────────────────
+- Frontend: Created `AuthContext.tsx` to hold JWT tokens and user state in React memory. 
+- Frontend: Created an `api.ts` fetch wrapper interceptor that automatically catches 401 Unauthorized errors and pings `/api/auth/token/refresh/` using the secure HttpOnly cookie, then seamlessly retries the failed request.
+- Frontend: Built beautiful `Login.tsx` and `Register.tsx` screens using React Hook Form and Shadcn UI components.
+- Frontend: Implemented `MyAccount.tsx` as a protected route that redirects guests to the login page.
+- Frontend: Wired the `Header.tsx` user icon to route to `/account`.
+
+STEP 4.2 — Admin Security Hardening
+───────────────────────────────────────────
+- Backend: Renamed the default Django `/admin/` route to `/rs-admin-panel/` to prevent automated bot scanning and credential stuffing.
+- Frontend: Created an isolated `AdminLayout.tsx` React dashboard template exclusively for staff users (Phase 7-9 foundation).
+- Frontend: Hardened the React `AdminLayout` route with an `is_staff` redirect boundary, completely ejecting non-staff users back to login.
+
+ACCEPTANCE CHECKS PASSED:
+  - Users can register and are immediately logged in via a fresh JWT token payload.
+  - The JWT refresh endpoint correctly utilizes cookies to restore sessions.
+  - A fake 401 error successfully triggers the token refresh flow.
+  - The default Django admin path is successfully obfuscated.
+
+===============================================================
+PHASE 5 — TRUST & CONVENIENCE: COMPLETE
+Date Completed: 2026-07-01
+===============================================================
+
+STEP 5.1 — Persisted Wishlist
+───────────────────────────────────────────
+- Backend: Built `WishlistAPIView` that reads a secure `session_key` for guests or falls back to DB relations for authenticated accounts.
+- Frontend: Refactored `ProductCard` heart toggles to run asynchronously via `apiFetch`.
+- Frontend: Added `WishlistPage` routing and Heart icon to `Header`.
+
+STEP 5.2 & 5.3 — Order Tracking & Returns
+───────────────────────────────────────────
+- Backend: Exposed `OrderRetrieveAPIView` for granular tracking status and `OrderReturnAPIView` for opening a return request.
+- Frontend: Built the `OrderTracking.tsx` stepper timeline layout.
+- Frontend: Built out the `MyAccount` dashboard with live order fetching and a prompt-based return initiation.
+
+STEP 5.4 — Comparison Tool
+───────────────────────────────────────────
+- Frontend: Built `CompareContext` and a floating, sticky `CompareBar` across the app.
+- Frontend: Included a hover-activated 'Compare' checkbox on all `ProductCard` renders.
+- Frontend: Built the side-by-side data grid `ComparePage`.
+
+ACCEPTANCE CHECKS PASSED:
+  - Wishlist persists beyond a browser refresh.
+  - Return limits enforce the item must be 'Delivered'.
+  - Max comparison is strictly capped at 3 items.

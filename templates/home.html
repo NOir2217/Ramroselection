@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ramro Selection | Backend Server</title>
+    <style>
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: radial-gradient(circle at top, #1e1b4b, #0f172a);
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+            padding: 24px;
+            box-sizing: border-box;
+        }
+        .card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.3), 0 8px 10px -6px rgb(0 0 0 / 0.3);
+        }
+        h1 {
+            font-size: 2.25rem;
+            margin-top: 0;
+            background: linear-gradient(to right, #6366f1, #a855f7);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        p {
+            color: #94a3b8;
+            font-size: 1.1rem;
+            line-height: 1.6;
+        }
+        .code-block {
+            background: #090d16;
+            border-radius: 8px;
+            padding: 16px;
+            text-align: left;
+            margin: 24px 0;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.9rem;
+            border: 1px solid #1e293b;
+            color: #38bdf8;
+            overflow-x: auto;
+        }
+        .badge {
+            background: rgba(99, 102, 241, 0.2);
+            color: #818cf8;
+            padding: 6px 12px;
+            border-radius: 9999px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            display: inline-block;
+            margin-bottom: 16px;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <span class="badge">Development Mode</span>
+        <h1>Backend Active & Connected</h1>
+        <p>The Django backend is running correctly and product API endpoints are active. To see the frontend, you need to compile the Vite React app first:</p>
+        <div class="code-block">
+            # Run build in the 'ramro' directory to compile files:<br>
+            node ramro/local_npm/bin/npm-cli.js --prefix ramro run build
+        </div>
+        <p>Once compiled, refresh this page to see the integrated frontend application!</p>
+    </div>
+</body>
+</html>

@@ -1,0 +1,754 @@
+================================================================================
+RAMRO SELECTION — E-COMMERCE BUILD ROADMAP
+A step-by-step execution plan for an AI coding assistant (e.g. Claude Code)
+to follow sequentially, phase by phase, task by task.
+================================================================================
+
+HOW TO USE THIS FILE
+--------------------
+- This is written for an AI agent with terminal/file access to the existing
+  Django + React (Vite) codebase.
+- Work top to bottom. Do not skip a phase. Each phase assumes the previous
+  one is done and working.
+- Each task has: GOAL, WHERE, WHAT TO BUILD, ACCEPTANCE CHECK.
+- Stop and verify the ACCEPTANCE CHECK before moving to the next task.
+- Existing stack (already installed, do not re-install unless noted):
+  Backend: Django 6.0.6, Django ORM, SQLite
+  Frontend: React 18.3.1, TypeScript, React Router 7.13, Vite 6.3.5,
+  Tailwind v4.1.12, MUI 7.3.5, Emotion, Radix UI primitives, Embla Carousel,
+  Framer Motion 12, Recharts 2.15.2, Sonner, React Hook Form, lucide-react,
+  class-variance-authority, tailwind-merge.
+
+================================================================================
+PRIORITY RATIONALE (why this order)
+================================================================================
+Current state: product catalogue, filters, sort, product cards with hover/
+wishlist-toggle-local-state/toast, mobile filter drawer, camelCase API,
+admin panel with basic search/filter, seed command.
+
+Missing and BLOCKING a real store: product detail page, cart (add qty,
+persist, checkout), search with suggestions, site navigation menu, real
+auth (customer + admin), order model, checkout flow, dummy image/product
+depth. These are Phase 1–4 below and must come first because nothing else
+(wishlist persistence, recommendations, order tracking) has a foundation
+without them.
+
+Phase order:
+  0. Security & infrastructure foundations (JWT auth, HTTPS, hardening —
+     do this FIRST and re-check it at the end of every later phase)
+  1. Data model overhaul (products, variants, users, cart, orders)
+  2. Core shopping flow (PDP, zoom, qty, cart, checkout, guest checkout)
+  3. Navigation & search (menu, predictive search)
+  4. Auth (customer login/register, admin login) — implemented per Phase 0
+  5. Trust & convenience features (wishlist persistence, order tracking,
+     returns, comparison, size guide)
+  6. Personalization (recently viewed, recommendations, saved profile)
+  7. Admin operations dashboard (Kanban orders, low stock, variants,
+     batch/expiry, bulk image upload)
+  8. Admin merchandising & marketing (collections, discounts/bundles,
+     abandoned cart recovery)
+  9. Admin customer & feedback tools (review moderation, VIP tiering)
+  10. Polish, dummy data depth, cross-platform QA, security re-audit
+
+CROSS-CUTTING STANDARDS (apply in every phase, not just Phase 10):
+  - Mobile-first responsive design: build every component at 375px width
+    first using Tailwind's responsive prefixes (sm:/md:/lg:/xl:), then
+    scale up to tablet (768px) and desktop (1280px+). Never design
+    desktop-first and shrink down.
+  - Every new API endpoint must be added to the security checklist in
+    Phase 0.3 (auth required? rate limited? input validated?) before it
+    is considered "done."
+  - Performance budget: paginate all list endpoints (products, orders,
+    reviews) server-side — never return unbounded querysets; lazy-load
+    images (loading="lazy"); code-split admin routes from the public
+    storefront bundle via React.lazy + Vite dynamic import so customers
+    never download admin-only JS.
+
+================================================================================
+PHASE 0 — SECURITY & INFRASTRUCTURE FOUNDATIONS
+================================================================================
+Do this before writing feature code. Retrofitting security later is how
+public sites get breached. Every later phase must comply with this list.
+
+0.1 Authentication: JWT (decision locked in)
+GOAL: Stateless, secure token auth suitable for a public site, decoupled
+frontend/backend, and future mobile app.
+WHERE: backend/accounts/, using djangorestframework +
+  djangorestframework-simplejwt (install these two packages)
+WHAT TO BUILD:
+  - Access token: short-lived (10-15 minutes), sent in the Authorization
+    header as "Bearer <token>" on every API request.
+  - Refresh token: longer-lived (7 days), stored in an httpOnly, Secure,
+    SameSite=Strict cookie — NEVER in localStorage or a JS-readable
+    cookie. This is the single most important rule: if the refresh token
+    is readable by JavaScript, a cross-site-scripting (XSS) bug becomes
+    full account takeover.
+  - Access token CAN live in memory (a React context/state variable),
+    not localStorage — avoids XSS token theft on page reload attacks.
+  - POST /api/auth/token/ (login) -> returns access token in body, sets
+    refresh cookie
+  - POST /api/auth/token/refresh/ -> reads refresh cookie, returns new
+    access token
+  - POST /api/auth/token/logout/ -> blacklists the refresh token
+    (SimpleJWT's token blacklist app) and clears the cookie
+  - Token rotation: enable ROTATE_REFRESH_TOKENS + BLACKLIST_AFTER_ROTATION
+    in SimpleJWT settings so a stolen refresh token can't be replayed
+    indefinitely.
+  - Admin (is_staff) users use the SAME JWT system, just with an
+    additional permission check (IsAdminUser) on admin-only endpoints —
+    do not build a second parallel auth system.
+ACCEPTANCE CHECK: login returns an access token + sets an httpOnly
+refresh cookie (verify via browser dev tools that JS document.cookie
+cannot read it); expired access token auto-refreshes transparently on
+the frontend via an axios/fetch interceptor.
+
+0.2 Core Django/web security hardening
+GOAL: Standard public-facing web app protections.
+WHAT TO BUILD / CONFIGURE:
+  - DEBUG = False in production; SECRET_KEY and all credentials loaded
+    from environment variables (use python-decouple or django-environ),
+    never committed to git.
+  - ALLOWED_HOSTS restricted to your real domain(s).
+  - Force HTTPS: SECURE_SSL_REDIRECT = True, SESSION_COOKIE_SECURE = True,
+    CSRF_COOKIE_SECURE = True (once you have a TLS certificate — e.g. via
+    Let's Encrypt on whatever host you deploy to).
+  - CORS: use django-cors-headers, explicitly whitelist only your own
+    frontend domain(s) — never CORS_ALLOW_ALL_ORIGINS = True.
+  - CSRF protection stays on for any cookie-based endpoints (the JWT
+    refresh-cookie endpoint included); Django's CSRF middleware handles
+    this, just don't disable it.
+  - Password storage: rely on Django's default PBKDF2/Argon2 hasher —
+    never store or log plaintext passwords.
+  - Rate limiting: use django-ratelimit (or DRF throttling classes) on
+    login, register, and password-reset endpoints — e.g. 5 attempts per
+    minute per IP — to block brute-force attacks.
+  - Input validation: use DRF serializers for every endpoint (never trust
+    raw request.POST/body) so malformed or malicious payloads are
+    rejected before touching the database.
+  - SQL injection: Django ORM already parameterizes queries by default —
+    just make sure no code ever uses raw SQL string concatenation.
+  - XSS: React escapes output by default — never use
+    dangerouslySetInnerHTML with unsanitized user input (e.g. review
+    text, product descriptions from admin). If rich text is ever needed,
+    sanitize with a library like DOMPurify first.
+  - File/image uploads (bulk image upload, review photos): validate file
+    type + size server-side (not just by extension — check actual MIME
+    type), store outside of any executable path, and serve via a
+    dedicated media path.
+  - Security headers: add django-csp or manual middleware for
+    Content-Security-Policy, X-Content-Type-Options: nosniff,
+    X-Frame-Options: DENY (prevents clickjacking on login/checkout pages).
+  - Admin panel: change the default /admin/ URL to something non-obvious
+    in production settings, enforce strong passwords, and enable Django's
+    admin login rate limiting.
+  - Dependency hygiene: run pip list --outdated and npm audit
+    periodically; pin versions in requirements.txt/package.json.
+ACCEPTANCE CHECK: a checklist file (security_checklist.md) exists listing
+every item above with a checkbox; all boxes checked before Phase 10 sign-off.
+
+0.3 Per-endpoint security checklist (fill in as each endpoint is built)
+GOAL: No endpoint ships without conscious security review.
+WHAT TO BUILD: a running table (in security_checklist.md) with one row
+  per API endpoint and columns: Endpoint | Auth required (Y/N/Staff-only)
+  | Rate limited (Y/N) | Input validated via serializer (Y/N) | Notes.
+ACCEPTANCE CHECK: every endpoint introduced in Phases 1-9 has a
+corresponding row filled in before that phase is marked complete.
+
+0.4 Environment & deployment separation
+GOAL: Never expose development settings/data to the public internet.
+WHAT TO BUILD: separate settings files (settings/dev.py,
+  settings/production.py) or environment-variable-driven config; a
+  production build serves the Vite-compiled static bundle (not the dev
+  server); SQLite is fine for now but note in the file that a
+  production-grade deployment should migrate to PostgreSQL before real
+  customer traffic, since SQLite does not handle concurrent writes well
+  at scale.
+ACCEPTANCE CHECK: production settings file has DEBUG=False and no
+hardcoded secrets; a note exists documenting the future Postgres migration.
+
+================================================================================
+PHASE 1 — DATA MODEL OVERHAUL
+================================================================================
+
+1.1 Extend Product model
+GOAL: Support variants, categories relevant to clothing + cosmetics, and
+richer metadata needed by later phases.
+WHERE: backend/products/models.py
+WHAT TO BUILD:
+  - Category model (id, name, slug, parent[nullable for subcategories])
+  - Product model fields to ADD (keep existing name/price/rating/images):
+      description (TextField)
+      brand (CharField, optional)
+      product_type (CharField choices: "clothing", "cosmetics", "other")
+      material_or_ingredients (TextField) -- fabric list or ingredient list
+      is_vegan (Bool), is_cruelty_free (Bool) -- cosmetics only, nullable
+      is_hypoallergenic (Bool, nullable)
+      season (CharField, nullable) -- clothing only
+      fit (CharField, nullable) -- e.g. slim/oversized/regular
+      skin_type (CharField, nullable) -- oily/dry/sensitive/combination
+      finish (CharField, nullable) -- matte/dewy/glossy
+      sku (CharField unique)
+      slug (SlugField unique, for clean URLs)
+  - ProductVariant model:
+      product (FK -> Product)
+      variant_type (CharField: "size_color" or "shade_finish_volume")
+      size (CharField, nullable) e.g. S/M/L/XL or numeric
+      color (CharField, nullable) + color_hex (CharField, nullable, for swatch)
+      shade (CharField, nullable) + shade_hex (CharField, nullable, for swatch)
+      volume (CharField, nullable) e.g. "30ml"
+      stock_quantity (IntegerField, default 0)
+      low_stock_threshold (IntegerField, default 5)
+      batch_number (CharField, nullable) -- cosmetics
+      expiration_date (DateField, nullable) -- cosmetics
+      extra_price (DecimalField, default 0) -- price delta from base product
+      sku_suffix (CharField)
+  - ProductImage model:
+      product (FK -> Product)
+      variant (FK -> ProductVariant, nullable) -- image tied to a specific
+        color/shade if applicable
+      image_url (URLField)
+      image_type (CharField: "primary", "angle", "swatch", "on_model",
+        "user_upload")
+      display_order (IntegerField)
+  - SizeGuide model:
+      category (FK -> Category)
+      brand (CharField, nullable)
+      chart_data (JSONField) -- rows of {size, chest_in, chest_cm, waist_in, ...}
+ACCEPTANCE CHECK: `python manage.py makemigrations && migrate` runs clean;
+Django admin shows all new models registered.
+
+1.2 User & profile models
+GOAL: Support guest checkout + registered accounts + saved preferences.
+WHERE: backend/accounts/ (new app: `python manage.py startapp accounts`)
+WHAT TO BUILD:
+  - Use Django's built-in User model for admins/staff (is_staff flag).
+  - CustomerProfile model:
+      user (OneToOne -> User, nullable -- null means guest)
+      email (EmailField) -- always required, even for guests
+      default_size (CharField, nullable)
+      skin_type (CharField, nullable)
+      is_vip (Bool, default False)
+      phone (CharField, nullable)
+  - Address model:
+      profile (FK -> CustomerProfile, nullable for guest one-off orders)
+      full_name, phone, street, city, postal_code, country, is_default
+ACCEPTANCE CHECK: migrations apply; can create a guest CustomerProfile
+with user=None from Django shell.
+
+1.3 Cart & Order models
+GOAL: Persistent cart (survives refresh) and full order lifecycle.
+WHERE: backend/orders/ (new app)
+WHAT TO BUILD:
+  - Cart model: id (UUID, used as session cart token), customer (FK nullable),
+    created_at, updated_at
+  - CartItem model: cart (FK), variant (FK -> ProductVariant), quantity
+  - Order model:
+      order_number (auto, human-readable e.g. RS-000123)
+      customer (FK nullable), guest_email
+      status (CharField choices: pending_payment, processing,
+        ready_for_dispatch, out_for_delivery, delivered, returned,
+        exchanged, cancelled)
+      shipping_address (FK -> Address, or snapshot as JSON)
+      subtotal, discount_total, shipping_fee, total (DecimalFields)
+      applied_discount_code (CharField, nullable)
+      created_at, updated_at
+      tracking_history (JSONField: list of {status, timestamp, note})
+  - OrderItem model: order (FK), variant (FK), quantity, unit_price
+  - ReturnRequest model: order_item (FK), reason, status
+    (requested/approved/rejected/completed), created_at
+ACCEPTANCE CHECK: migrations apply; can create an Order with 2 OrderItems
+and see it in Django admin.
+
+1.4 Wishlist, Recently Viewed, Reviews, Discounts, Collections models
+GOAL: Support Phase 5–8 features now so APIs can be built without further
+schema churn.
+WHERE: continue in `products` and `orders` apps, or new `engagement` app.
+WHAT TO BUILD:
+  - WishlistItem: customer (FK nullable) or session_key (for guests),
+    product (FK), added_at
+  - RecentlyViewed: session_key or customer (FK nullable), product (FK),
+    viewed_at
+  - Review: product (FK), customer (FK nullable), rating (1-5), title,
+    body, photo_urls (JSONField list), is_approved (Bool, default False),
+    created_at
+  - DiscountRule: code (CharField, nullable for automatic rules), rule_type
+    (choices: percent_off, buy_x_get_y, bundle_fixed_price, free_gift),
+    config (JSONField), active_from, active_to, is_active
+  - Collection: name, slug, description, banner_image_url, is_active,
+    display_order; ManyToMany to Product
+  - AbandonedCart: derived view/query, not a stored model (see Phase 8).
+ACCEPTANCE CHECK: all migrations applied; `python manage.py seed_products`
+still runs (update it in 1.5).
+
+1.5 Update seed command
+GOAL: Seed realistic dummy data covering both product types with variants,
+multiple images, reviews, and a size guide.
+WHERE: backend/products/management/commands/seed_products.py
+WHAT TO BUILD:
+  - Seed at least 2 categories (Clothing, Cosmetics) with 4-5 subcategories
+    each (Bags, Makeup, Hair, Nails, Cream — per existing filter list —
+    plus Tops, Dresses, Foundation, Lipstick, etc.)
+  - 30-40 products total, each with 2-4 ProductVariants, 3-5 ProductImages
+    (use Unsplash/placeholder URLs as already done, plus a placeholder
+    "swatch" color block image for cosmetics using a solid-color image
+    generator URL, e.g. https://placehold.co/100x100/{hex}/png)
+  - 5-10 seeded Reviews per popular product (mix of approved/unapproved)
+  - 1-2 SizeGuide entries for clothing categories
+  - 2-3 DiscountRule entries (e.g. 10% off lipsticks, bundle deal)
+  - 2 Collections ("New Arrivals", "Festive Sale") with products attached
+ACCEPTANCE CHECK: after running seed command, `/api/products/` returns
+products with nested variants/images; Django admin shows populated tables.
+
+================================================================================
+PHASE 2 — CORE SHOPPING FLOW
+================================================================================
+
+2.1 Product Detail Page (PDP)
+GOAL: Full product page users can actually buy from.
+WHERE: frontend/src/pages/ProductDetail.tsx (new), route
+  `/product/:slug` in router config
+WHAT TO BUILD:
+  - Image gallery: thumbnail strip + main image, Embla Carousel for mobile
+    swipe, click-to-zoom (use a simple CSS transform on hover for desktop
+    magnifier; on mobile, tap opens full-screen pinch-zoom modal via
+    Radix Dialog)
+  - Variant selector:
+      Clothing: size buttons (S/M/L/XL) + color swatches (rendered as
+        actual color chips using color_hex, not generic icons)
+      Cosmetics: shade swatches (using shade_hex) + finish/volume dropdown
+      Disable/gray out any variant combo with stock_quantity = 0
+  - Quantity stepper (-, input, +) capped at available stock
+  - "Add to Cart" button -> POST /api/cart/items/ -> sonner toast confirms
+  - Price display: current vs original with sale_percentage badge if on sale
+  - Tabs (Radix Tabs) for: Description, Materials/Ingredients, Size Guide
+    (clothing only), Reviews
+  - Size Guide tab: renders SizeGuide.chart_data as an interactive table
+    with an inches/cm toggle switch
+  - Reviews tab: list approved reviews with star rating, photos in a small
+    grid, "Write a review" form (React Hook Form) gated to delivered
+    customers (checked server-side against Order/OrderItem)
+ACCEPTANCE CHECK: navigating to a product from the catalogue shows the PDP
+with working variant selection, quantity, add-to-cart, and zoom.
+
+2.2 Backend PDP API
+GOAL: Serve everything the PDP needs in one call.
+WHERE: backend/products/views.py, urls.py
+WHAT TO BUILD:
+  - GET /api/products/<slug>/ returns product + nested variants + images +
+    approved reviews + related size guide (if clothing)
+ACCEPTANCE CHECK: endpoint returns full nested JSON in camelCase matching
+existing convention.
+
+2.3 Cart backend
+GOAL: Persistent server-side cart identified by a cart token stored in
+a cookie/localStorage, usable by guests and logged-in users alike.
+WHERE: backend/orders/views.py, urls.py
+WHAT TO BUILD:
+  - POST /api/cart/items/ {variantId, quantity} -> creates Cart if none,
+    upserts CartItem, returns full cart
+  - GET /api/cart/ -> returns cart with items, computed line totals, subtotal
+  - PATCH /api/cart/items/<id>/ {quantity} -> update
+  - DELETE /api/cart/items/<id>/ -> remove
+  - Cart merge: if a guest cart exists and user logs in, merge into their
+    CustomerProfile's cart
+ACCEPTANCE CHECK: can add/update/remove items via curl/Postman and see
+correct subtotal.
+
+2.4 Cart drawer / page (frontend)
+GOAL: Users can review and edit cart contents.
+WHERE: frontend/src/components/CartDrawer.tsx (Radix Sheet, slides from
+  right, opened from header cart icon) + frontend/src/pages/CartPage.tsx
+  for full-page view
+WHAT TO BUILD:
+  - Line items with thumbnail, name, variant (size/color or shade), qty
+    stepper, remove button, line total
+  - Subtotal, estimated shipping placeholder, "Proceed to Checkout" button
+  - Empty state illustration/message
+ACCEPTANCE CHECK: adding items on PDP updates the cart icon count in the
+header in real time; drawer reflects live state.
+
+2.5 Checkout flow (guest + logged-in)
+GOAL: Complete purchase without forcing account creation.
+WHERE: frontend/src/pages/Checkout.tsx (multi-step: Shipping -> Payment
+  placeholder -> Review -> Confirmation), backend/orders/views.py
+WHAT TO BUILD:
+  - Step 1 Shipping: form (React Hook Form) for name/email/phone/address;
+    if logged in, prefill from saved Address; guest sees a checkbox
+    "Create an account to track this order" (optional, post-purchase)
+  - Step 2 Payment: placeholder integration point (e.g. "Cash on Delivery"
+    + "Card — Coming Soon" stub); do not build real payment processing
+    unless explicitly requested later
+  - Step 3 Review: order summary, apply discount code field (validates
+    against DiscountRule), place order button
+  - POST /api/orders/ creates Order + OrderItems from current cart,
+    decrements ProductVariant.stock_quantity, clears cart, returns order
+  - Step 4 Confirmation: order number, "Save your details for next time"
+    prompt (creates CustomerProfile + Address from the guest info if
+    accepted)
+ACCEPTANCE CHECK: full guest checkout produces an Order visible in Django
+admin with correct items/total and decremented stock.
+
+================================================================================
+PHASE 3 — NAVIGATION & SEARCH
+================================================================================
+
+3.1 Site header / menu
+GOAL: Clear, user-friendly primary navigation.
+WHERE: frontend/src/components/Header.tsx (new or refactor existing)
+WHAT TO BUILD:
+  - Logo, primary nav (Clothing, Cosmetics, New Arrivals, Sale — driven by
+    Category + Collection data, not hardcoded), search bar (see 3.2),
+    wishlist icon with count, cart icon with count, account menu
+    (Radix DropdownMenu: Login/Register or My Account/Orders/Logout)
+  - Mega-menu on hover/click for Clothing/Cosmetics showing subcategories
+    with a small promo image, using Radix DropdownMenu or a custom
+    Collapsible panel
+  - Mobile: hamburger menu opening a full-screen or slide-in nav (Radix
+    Dialog/Sheet), same structure collapsed
+ACCEPTANCE CHECK: menu items link to filtered catalogue views
+(`/shop?category=cosmetics&subcategory=lipstick`); mobile menu works at
+narrow viewport.
+
+3.2 Predictive search
+GOAL: Search-as-you-type with suggestions.
+WHERE: frontend/src/components/SearchBar.tsx; backend endpoint
+WHAT TO BUILD:
+  - Backend: GET /api/products/search/?q=<term> returns top 6-8 matches
+    (name, category, thumbnail, price) using Django ORM `icontains` on
+    name/brand/category, debounced client-side (300ms)
+  - Frontend: input with Radix Popover showing a dropdown list of
+    matches grouped by category, plus a "See all results for '<term>'"
+    link to a full search results page (`/search?q=`)
+  - Full search results page reuses ProductCatalogue grid/list + filters
+ACCEPTANCE CHECK: typing 2+ characters shows live suggestions within
+~300ms; pressing Enter or clicking "See all" navigates to results page.
+
+3.3 Extended filters (clothing/cosmetics specific)
+GOAL: Match the "Smart Filters" requirement beyond category/price/rating.
+WHERE: frontend/src/components/FilterPanel.tsx, backend query params
+WHAT TO BUILD:
+  - Add conditional filter groups shown based on selected category type:
+      Clothing: Size, Color (swatch checkboxes), Fabric/Material, Fit, Season
+      Cosmetics: Skin Type, Finish, Ingredients (Vegan/Cruelty-Free toggles)
+  - Backend: extend /api/products/ to accept these as query params and
+    filter via Django ORM
+ACCEPTANCE CHECK: selecting "Vegan" only shows cosmetics with is_vegan=True;
+selecting "Size M" only shows products with an M variant in stock.
+
+================================================================================
+PHASE 4 — AUTHENTICATION
+================================================================================
+
+4.1 Customer auth
+GOAL: Register/login for customers using the JWT system built in Phase 0.1.
+WHERE: backend/accounts/views.py, urls.py (built on SimpleJWT);
+  frontend/src/pages/Login.tsx, Register.tsx;
+  frontend/src/context/AuthContext.tsx
+WHAT TO BUILD:
+  - POST /api/auth/register/ (creates User + CustomerProfile, then logs
+    in and returns tokens the same way as /api/auth/token/)
+  - Reuse /api/auth/token/, /api/auth/token/refresh/,
+    /api/auth/token/logout/ from Phase 0.1 -- do not build a second
+    login endpoint.
+  - AuthContext holds the access token in memory (React state, NOT
+    localStorage) plus the current user object; provides
+    login/logout/register functions app-wide; on app load, silently
+    calls the refresh endpoint (cookie-based) to restore a session
+    without asking the user to log in again.
+  - Add a fetch/axios interceptor: on a 401 response, attempt one silent
+    token refresh, retry the original request once, then force logout if
+    that also fails.
+  - Login/Register forms (React Hook Form) with client-side validation
+    AND rely on server-side validation as the real gate; show field-level
+    errors plus a toast for network/server errors.
+  - "My Account" page: profile info, saved addresses, order history list
+    linking to Order Tracking (Phase 5).
+ACCEPTANCE CHECK: can register, log in, see account menu update, refresh
+the page and remain logged in (via silent refresh), log out and confirm
+the refresh cookie is cleared and a subsequent refresh attempt fails.
+
+4.2 Admin login
+GOAL: Separate, secure admin entry point distinct from customer login,
+using the same JWT infrastructure with a staff-only permission gate.
+WHERE: leverage Django's built-in /admin/ for raw CRUD (already exists);
+  additionally build a custom-branded admin dashboard shell for Phase
+  7-9 features that plain Django admin cannot express well (Kanban
+  board, etc.)
+WHAT TO BUILD:
+  - Keep Django /admin/ for raw CRUD, but move it off the default
+    /admin/ path per the Phase 0.2 hardening note, and ensure it is only
+    reachable over HTTPS in production.
+  - New: frontend/src/admin/ React section, route-guarded by checking
+    is_staff on the decoded JWT/user object from AuthContext, with its
+    own login screen at /admin-login that calls the SAME
+    /api/auth/token/ endpoint -- the backend rejects the token for
+    admin-only API routes if is_staff is False (checked server-side via
+    DRF's IsAdminUser permission class, never trust a client-side check
+    alone).
+  - All /api/admin/* endpoints require IsAdminUser at the DRF permission
+    layer, in addition to the frontend route guard -- the frontend guard
+    is only a UX convenience, the real security boundary is the backend.
+ACCEPTANCE CHECK: non-staff user hitting admin-protected routes gets
+redirected client-side AND receives a 403 if they try calling an
+/api/admin/* endpoint directly (e.g. via curl) with a valid but
+non-staff token; staff user reaches the admin dashboard shell normally.
+
+gets redirected; staff user reaches the admin dashboard shell.
+
+================================================================================
+PHASE 5 — TRUST & CONVENIENCE FEATURES
+================================================================================
+
+5.1 Wishlist (persisted)
+GOAL: Replace local-only heart toggle with real persistence for guests
+(session_key) and logged-in users.
+WHERE: backend/engagement/views.py; frontend ProductCard.tsx,
+  new WishlistPage.tsx
+WHAT TO BUILD: POST/DELETE /api/wishlist/items/, GET /api/wishlist/;
+  merge guest wishlist into account on login (same pattern as cart merge)
+ACCEPTANCE CHECK: hearted items persist across refresh and login.
+
+5.2 Order tracking
+GOAL: Clear timeline of order status.
+WHERE: frontend/src/pages/OrderTracking.tsx (`/orders/:orderNumber`)
+WHAT TO BUILD:
+  - GET /api/orders/<order_number>/ returns order + tracking_history
+  - Visual horizontal/vertical stepper (custom component or MUI Stepper)
+    showing: Pending Payment -> Processing -> Ready for Dispatch ->
+    Out for Delivery -> Delivered, with timestamps; Returned/Exchanged
+    shown as a branch state if applicable
+ACCEPTANCE CHECK: order tracking page renders correct stage highlighted
+based on current status.
+
+5.3 Returns / exchanges
+GOAL: Self-service return initiation.
+WHERE: frontend order history -> "Request Return" button per item;
+  backend ReturnRequest model (already created in 1.3)
+WHAT TO BUILD: POST /api/orders/items/<id>/return/ {reason} creates a
+  ReturnRequest with status=requested; visible to admin in Phase 7
+ACCEPTANCE CHECK: customer can submit a return reason; status shows
+"Return Requested" in their order history.
+
+5.4 Comparison tool
+GOAL: Side-by-side comparison of similar items.
+WHERE: frontend/src/pages/ComparePage.tsx; "Compare" checkbox on
+  ProductCard (max 3 items, stored in local component state / URL params)
+WHAT TO BUILD: table layout comparing price, rating, key specs
+  (fabric/fit for clothing, ingredients/finish for cosmetics), images
+ACCEPTANCE CHECK: selecting 2-3 products and clicking "Compare" shows an
+aligned comparison table.
+
+================================================================================
+PHASE 6 — PERSONALIZATION
+================================================================================
+
+6.1 Recently viewed
+GOAL: Track and surface last-viewed products.
+WHERE: backend RecentlyViewed model (1.4); frontend hook that fires on
+  PDP mount; component at bottom of PDP and homepage
+WHAT TO BUILD: POST /api/recently-viewed/ on PDP view (fire-and-forget);
+  GET /api/recently-viewed/ returns last 8-10 distinct products for the
+  session/customer, most recent first
+ACCEPTANCE CHECK: viewing 3 products then returning home shows them in a
+"Recently Viewed" carousel (Embla).
+
+6.2 Recommendations
+GOAL: "Complete the look" and "Often bought together."
+WHERE: backend endpoint using simple rule-based logic to start (not ML):
+  same category + frequently co-ordered pairs from OrderItem history, or
+  a manually curated "related_products" M2M field on Product as a fallback
+WHAT TO BUILD: GET /api/products/<slug>/recommendations/; render on PDP
+  below the fold and in cart drawer ("Often bought together")
+ACCEPTANCE CHECK: PDP shows a non-empty, relevant recommendation carousel.
+
+6.3 Profile save (default size / skin type)
+GOAL: Faster repeat shopping.
+WHERE: My Account page, CustomerProfile model (already created)
+WHAT TO BUILD: form to set default_size/skin_type; PDP variant selector
+  auto-preselects matching size/skin_type filter when logged in
+ACCEPTANCE CHECK: setting "Medium" as default size pre-highlights M
+variant on next PDP visit (when in stock).
+
+================================================================================
+PHASE 7 — ADMIN OPERATIONS DASHBOARD
+================================================================================
+
+7.1 Kanban order pipeline
+GOAL: Visual order status board.
+WHERE: frontend/src/admin/OrdersKanban.tsx
+WHAT TO BUILD: columns = Pending Payment, Processing, Ready for
+  Dispatch, Out for Delivery/Completed, Returned/Exchanged; drag-and-drop
+  (or simple dropdown-per-card if drag-drop libs aren't installed) to move
+  an order between statuses, calling PATCH /api/admin/orders/<id>/status/
+  which also appends to tracking_history
+ACCEPTANCE CHECK: moving a card updates order status in DB and appears on
+customer's order tracking page.
+
+7.2 Low stock alerts
+GOAL: Automated visibility into low-stock variants.
+WHERE: frontend/src/admin/LowStockPanel.tsx; backend query
+WHAT TO BUILD: GET /api/admin/inventory/low-stock/ returns variants where
+  stock_quantity <= low_stock_threshold; display as a table/banner on
+  admin dashboard home; optionally a daily summary email stub (log only,
+  no real email sending unless requested)
+ACCEPTANCE CHECK: seeding a variant with stock below threshold shows it
+in the low stock panel.
+
+7.3 Variant management UI
+GOAL: Admin can add/edit size-color or shade-finish-volume variants
+without touching Django admin raw forms.
+WHERE: frontend/src/admin/ProductVariantEditor.tsx
+WHAT TO BUILD: matrix-style editor (rows = sizes, columns = colors, or
+  rows = shades) to bulk-create ProductVariant rows with stock quantities
+ACCEPTANCE CHECK: admin can create a full size/color matrix for a
+clothing product in one screen.
+
+7.4 Batch/expiration tracking
+GOAL: Prevent selling expired cosmetics.
+WHERE: variant editor extended fields (batch_number, expiration_date,
+  already on ProductVariant); admin alert similar to low stock
+WHAT TO BUILD: GET /api/admin/inventory/expiring-soon/?days=30 flags
+  variants nearing expiration; block/flag those variants from being
+  orderable if past expiration_date (checked at cart/checkout time too)
+ACCEPTANCE CHECK: a variant with expiration_date in the past cannot be
+added to cart; shows "Expired" admin badge.
+
+7.5 Bulk image upload
+GOAL: Drag-and-drop multi-image upload per product.
+WHERE: frontend/src/admin/BulkImageUpload.tsx; backend endpoint
+WHAT TO BUILD: POST /api/admin/products/<id>/images/ accepts multiple
+  files (or URLs, since current setup is URL-based per existing schema —
+  decide: if moving to real file uploads, configure Django MEDIA_ROOT and
+  a FileField instead of URLField); drag-and-drop zone with preview grid,
+  reorderable (updates display_order), tagging each image's image_type
+ACCEPTANCE CHECK: admin can upload/attach 5 images to a product in one
+action and reorder them.
+
+================================================================================
+PHASE 8 — ADMIN MERCHANDISING & MARKETING
+================================================================================
+
+8.1 Collections manager
+GOAL: Toggle homepage collections on/off.
+WHERE: frontend/src/admin/CollectionsManager.tsx
+WHAT TO BUILD: CRUD UI for Collection model, product picker (multi-select
+  search), is_active toggle, display_order drag-reorder; homepage
+  frontend renders active collections in order
+ACCEPTANCE CHECK: toggling a collection off immediately removes its
+homepage section (verify via API + reload).
+
+8.2 Discount & bundle creator
+GOAL: Flexible promo rules.
+WHERE: frontend/src/admin/DiscountEditor.tsx; backend DiscountRule model
+  (1.4) + application logic in checkout (2.5)
+WHAT TO BUILD: form supporting rule_type selection with dynamic config
+  fields (percent value, buy_x_get_y quantities, bundle product picker +
+  fixed price, free gift product picker + threshold); checkout applies
+  matching active rules automatically or via code entry
+ACCEPTANCE CHECK: creating a "Buy 2 lipsticks get 10% off" rule correctly
+discounts a cart containing 2 qualifying lipsticks at checkout.
+
+8.3 Abandoned cart recovery dashboard
+GOAL: Visibility into carts left without completed orders.
+WHERE: frontend/src/admin/AbandonedCarts.tsx; backend query
+WHAT TO BUILD: GET /api/admin/abandoned-carts/ returns Carts with items,
+  updated_at older than N hours, and no linked completed Order; show
+  customer email (if known), items, value, last activity time
+ACCEPTANCE CHECK: a cart with items untouched for 24+ hours (simulate by
+adjusting updated_at in test data) appears in the list.
+
+================================================================================
+PHASE 9 — ADMIN CUSTOMER & FEEDBACK TOOLS
+================================================================================
+
+9.1 Review moderation
+GOAL: Approve/hide reviews, especially photo reviews.
+WHERE: frontend/src/admin/ReviewModeration.tsx
+WHAT TO BUILD: list of pending Reviews (is_approved=False), photo
+  thumbnails, approve/reject buttons -> PATCH /api/admin/reviews/<id>/
+ACCEPTANCE CHECK: approving a review makes it visible on the PDP reviews
+tab immediately.
+
+9.2 Customer tiering (VIP)
+GOAL: Flag repeat customers.
+WHERE: frontend/src/admin/CustomerList.tsx
+WHAT TO BUILD: list customers with total order count/value; manual
+  is_vip toggle, or automated rule (e.g. >= 5 completed orders ->
+  auto-flag, run as a small management command or signal on order
+  completion)
+ACCEPTANCE CHECK: a customer crossing the order-count threshold gets
+is_vip=True automatically (or admin can set it manually).
+
+9.3 Top viewed items analytics
+GOAL: Restock decision support.
+WHERE: frontend/src/admin/AnalyticsDashboard.tsx using Recharts
+  (already installed)
+WHAT TO BUILD: bar chart of most-viewed products (from RecentlyViewed
+  aggregated counts) and a simple sales-over-time line chart from Order
+  data
+ACCEPTANCE CHECK: charts render real aggregated numbers, not placeholders.
+
+================================================================================
+PHASE 10 — POLISH, DUMMY DATA DEPTH, QA
+================================================================================
+
+10.1 Dummy data pass
+  - Ensure every seeded product has: 3+ images, 2+ variants with stock,
+    at least 1 approved review, correct category/type-specific fields
+    (skin_type/finish for cosmetics, fit/season for clothing) populated
+    so filters never return empty states unexpectedly.
+
+10.2 Empty/loading/error states
+  - Audit every list/detail view (catalogue, PDP, cart, orders,
+    wishlist, admin panels) for loading skeletons, empty-state
+    messaging, and error toasts — reuse sonner + existing patterns.
+
+10.3 Cross-platform / responsive QA
+  - Verify header/menu, filter drawer, PDP gallery, cart drawer, and all
+    admin tables at: mobile (375px, e.g. iPhone SE), large mobile (414px),
+    tablet portrait (768px), tablet landscape (1024px), desktop
+    (1280px+), and large desktop (1920px).
+  - Test on real devices where possible, not just browser dev-tools
+    resize: iOS Safari, Android Chrome, desktop Chrome/Firefox/Edge.
+  - Specifically verify touch targets (buttons/checkboxes) are at least
+    44x44px on mobile, the PDP pinch-zoom works on a real touchscreen,
+    and the mobile filter Sheet/drawer doesn't trap scroll or block the
+    page underneath.
+  - Verify the site is usable one-handed on a phone: cart icon, search,
+    and hamburger menu reachable within thumb range in the header.
+
+10.4 Accessibility pass
+  - Confirm Radix primitives retain keyboard nav; alt text on all
+    product images; form labels tied to inputs (React Hook Form +
+    proper <label htmlFor>); color contrast meets WCAG AA on text over
+    product images/badges.
+
+10.5 Security re-audit (final pass before going live)
+  - Re-run through the full security_checklist.md from Phase 0 and
+    confirm every item is checked, not just planned.
+  - Confirm DEBUG=False, real domain in ALLOWED_HOSTS, HTTPS enforced,
+    and no secrets committed to git (search the repo history too, not
+    just current files).
+  - Confirm the JWT refresh token cookie is httpOnly + Secure +
+    SameSite=Strict in the deployed environment (check actual response
+    headers, not just code intent).
+  - Run npm audit and pip check for known vulnerable dependencies and
+    resolve any high/critical findings before launch.
+  - Confirm rate limiting is active on login/register/checkout endpoints
+    by testing it manually (attempt 10 rapid login tries and confirm
+    you get blocked).
+  - Confirm admin routes reject non-staff JWTs at the API level (not
+    just hidden in the UI) by testing with curl using a real customer
+    token.
+
+10.6 End-to-end smoke test script
+  - Manually walk: browse -> filter -> search -> PDP -> add to cart ->
+    guest checkout -> order confirmation -> order tracking -> admin
+    moves order through Kanban -> customer sees status update ->
+    customer submits return -> admin approves review -> product page
+    reflects new review.
+  - Repeat the same walk once on a real mobile device end-to-end.
+
+================================================================================
+END OF ROADMAP
+================================================================================
