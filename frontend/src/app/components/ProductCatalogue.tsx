@@ -48,7 +48,7 @@ export function ProductCatalogue() {
       })
       .then((data) => {
         if (active) {
-          setProducts(data);
+          setProducts(data.results ?? data);
           setLoading(false);
         }
       })

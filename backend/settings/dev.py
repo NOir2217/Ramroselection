@@ -11,6 +11,6 @@ if not CORS_ALLOW_ALL_ORIGINS:
 
 # JWT Refresh Cookie Settings
 JWT_COOKIE_NAME = 'refresh_token'
-JWT_COOKIE_SECURE = False # False for local dev without HTTPS
+JWT_COOKIE_SECURE = False
 JWT_COOKIE_HTTPONLY = True
-JWT_COOKIE_SAMESITE = 'Lax' # Lax is easier for local dev
+JWT_COOKIE_SAMESITE = 'Lax'

@@ -23,26 +23,26 @@ class Product(models.Model):
     name = models.CharField(max_length=255)
     price = models.DecimalField(max_digits=10, decimal_places=2)
     original_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
-    rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.0)
+    rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.0, db_index=True)
     review_count = models.IntegerField(default=0)
     image = models.URLField(max_length=500)
-    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='products')
-    is_new = models.BooleanField(default=False)
-    is_sale = models.BooleanField(default=False)
+    category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='products', db_index=True)
+    is_new = models.BooleanField(default=False, db_index=True)
+    is_sale = models.BooleanField(default=False, db_index=True)
     sale_percentage = models.IntegerField(null=True, blank=True)
 
     # Rich metadata
     description = models.TextField()
-    brand = models.CharField(max_length=255, null=True, blank=True)
+    brand = models.CharField(max_length=255, null=True, blank=True, db_index=True)
     product_type = models.CharField(max_length=20, choices=PRODUCT_TYPE_CHOICES, default='other')
     material_or_ingredients = models.TextField(help_text="Fabric list or ingredient list")
-    is_vegan = models.BooleanField(null=True, blank=True) # cosmetics only
-    is_cruelty_free = models.BooleanField(null=True, blank=True) # cosmetics only
+    is_vegan = models.BooleanField(null=True, blank=True, db_index=True) # cosmetics only
+    is_cruelty_free = models.BooleanField(null=True, blank=True, db_index=True) # cosmetics only
     is_hypoallergenic = models.BooleanField(null=True, blank=True)
     season = models.CharField(max_length=50, null=True, blank=True) # clothing only
     fit = models.CharField(max_length=50, null=True, blank=True) # e.g. slim/oversized/regular
-    skin_type = models.CharField(max_length=50, null=True, blank=True) # oily/dry/sensitive/combination
-    finish = models.CharField(max_length=50, null=True, blank=True) # matte/dewy/glossy
+    skin_type = models.CharField(max_length=50, null=True, blank=True, db_index=True) # oily/dry/sensitive/combination
+    finish = models.CharField(max_length=50, null=True, blank=True, db_index=True) # matte/dewy/glossy
     sku = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(max_length=255, unique=True)
     related_products = models.ManyToManyField('self', blank=True, symmetrical=True)
@@ -58,16 +58,16 @@ class ProductVariant(models.Model):
 
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='variants')
     variant_type = models.CharField(max_length=50, choices=VARIANT_TYPE_CHOICES)
-    size = models.CharField(max_length=50, null=True, blank=True)
-    color = models.CharField(max_length=100, null=True, blank=True)
+    size = models.CharField(max_length=50, null=True, blank=True, db_index=True)
+    color = models.CharField(max_length=100, null=True, blank=True, db_index=True)
     color_hex = models.CharField(max_length=7, null=True, blank=True) # for swatch
-    shade = models.CharField(max_length=100, null=True, blank=True)
+    shade = models.CharField(max_length=100, null=True, blank=True, db_index=True)
     shade_hex = models.CharField(max_length=7, null=True, blank=True) # for swatch
     volume = models.CharField(max_length=50, null=True, blank=True)
-    stock_quantity = models.IntegerField(default=0)
+    stock_quantity = models.IntegerField(default=0, db_index=True)
     low_stock_threshold = models.IntegerField(default=5)
     batch_number = models.CharField(max_length=100, null=True, blank=True) # cosmetics
-    expiration_date = models.DateField(null=True, blank=True) # cosmetics
+    expiration_date = models.DateField(null=True, blank=True, db_index=True) # cosmetics
     extra_price = models.DecimalField(max_digits=10, decimal_places=2, default=0.0)
     sku_suffix = models.CharField(max_length=100)
 

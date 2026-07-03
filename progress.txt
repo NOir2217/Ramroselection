@@ -1,19 +1,19 @@
 RAMRO SELECTION — PROJECT PROGRESS & CHANGES LOG
 
-===============================================================
+==============================================================
 PHASE 1 — DATA MODEL OVERHAUL: COMPLETE
 Date Completed: 2026-07-01
-===============================================================
+==============================================================
 
 STEP 1.1 — Extend Product Model (COMPLETE)
-───────────────────────────────────────────
-Files changed:
+──────────────────────────────────────────
+- Files changed:
   - products/models.py
   - products/views.py
   - products/admin.py
   - products/migrations/0001_initial.py (regenerated)
 
-Changes:
+- Changes:
   - Deleted old db.sqlite3 and migration file for clean reset.
   - Created 'Category' model with self-referential parent hierarchy and slug.
   - Updated 'Product' model:
@@ -36,15 +36,15 @@ Changes:
   - Created superuser: admin / admin.
 
 STEP 1.2 — User & Profile Models (COMPLETE)
-─────────────────────────────────────────────
-Files changed:
+────────────────────────────────────────────
+- Files changed:
   - accounts/ (new app)
   - accounts/models.py
   - accounts/admin.py
   - accounts/migrations/0001_initial.py
   - backend/settings.py
 
-Changes:
+- Changes:
   - Created 'accounts' Django app; registered in INSTALLED_APPS.
   - 'CustomerProfile' model: user (OneToOne -> User, nullable), email, default_size,
     skin_type, is_vip (default False), phone.
@@ -53,15 +53,15 @@ Changes:
   - AddressInline inside CustomerProfileAdmin.
 
 STEP 1.3 — Cart & Order Models (COMPLETE)
-───────────────────────────────────────────
-Files changed:
+──────────────────────────────────────────
+- Files changed:
   - orders/ (new app)
   - orders/models.py
   - orders/admin.py
   - orders/migrations/0001_initial.py
   - backend/settings.py
 
-Changes:
+- Changes:
   - Created 'orders' Django app; registered in INSTALLED_APPS.
   - 'Cart' model: UUID PK (session token), customer FK (nullable), timestamps.
   - 'CartItem' model: cart FK, variant FK, quantity.
@@ -74,8 +74,8 @@ Changes:
   - CartItemInline in CartAdmin, OrderItemInline in OrderAdmin.
 
 STEP 1.4 — Wishlist, Recently Viewed, Reviews, Discounts, Collections (COMPLETE)
-───────────────────────────────────────────────────────────────────────────────────
-Files changed:
+──────────────────────────────────────────────────────────────────────────────────
+- Files changed:
   - engagement/ (new app)
   - engagement/models.py
   - engagement/admin.py
@@ -88,7 +88,7 @@ Files changed:
   - orders/migrations/0002_discountrule.py
   - backend/settings.py
 
-Changes:
+- Changes:
   - Created 'engagement' Django app; registered in INSTALLED_APPS.
   - 'WishlistItem' model: customer FK (nullable), session_key, product FK, added_at.
     unique_together on (customer, product) and (session_key, product).
@@ -103,11 +103,11 @@ Changes:
   - CollectionAdmin uses filter_horizontal for product selection.
 
 STEP 1.5 — Update Seed Command (COMPLETE)
-───────────────────────────────────────────
-Files changed:
+──────────────────────────────────────────
+- Files changed:
   - products/management/commands/seed_products.py (full rewrite)
 
-Changes:
+- Changes:
   - 9 categories: Clothing + Cosmetics (root), plus Tops, Dresses, Bags,
     Makeup, Hair, Nails, Cream (subcategories).
   - 25 products total (12 clothing, 13 cosmetics) with:
@@ -124,14 +124,14 @@ Changes:
     makeup), and automatic 5% storewide.
   - 2 Collections: "New Arrivals" (8 items) and "Festive Sale" (8 items).
 
-ACCEPTANCE CHECKS PASSED:
+- ACCEPTANCE CHECKS PASSED:
   - `python manage.py seed_products` exits with SUCCESS.
   - /api/products/ returns 25 products with correct camelCase keys.
   - Django admin shows all populated tables.
 
-===============================================================
+==============================================================
 PHASE 1 FULLY COMPLETE — Ready to proceed to Phase 2
-===============================================================
+==============================================================
 
 --------------------------------------------------------------------------------
 [Phase 0] Security & Infrastructure Foundations COMPLETED
@@ -155,13 +155,13 @@ PHASE 1 FULLY COMPLETE — Ready to proceed to Phase 2
 - Created `security_checklist.md` to track per-endpoint security status.
 - Migrations run and tested successfully.
 
-===============================================================
+==============================================================
 PHASE 2 — CORE SHOPPING FLOW: COMPLETE
 Date Completed: 2026-07-01
-===============================================================
+==============================================================
 
 STEP 2.1 & 2.2 — Product Detail Page (COMPLETE)
-───────────────────────────────────────────
+──────────────────────────────────────────
 - Backend: Created ProductSerializer including nested Variants, Images, and Reviews.
 - Backend: Created ProductDetailAPIView retrieving product by slug.
 - Frontend: Created ProductDetail.tsx displaying Embla-style image gallery.
@@ -170,7 +170,7 @@ STEP 2.1 & 2.2 — Product Detail Page (COMPLETE)
 - Frontend: Added Tabs for Details, Materials, Size Guide, and Reviews.
 
 STEP 2.3 & 2.4 — Shopping Cart (COMPLETE)
-───────────────────────────────────────────
+──────────────────────────────────────────
 - Backend: Created Cart and CartItem serializers with computed line totals.
 - Backend: Created CartAPIView and CartItemAPIView supporting guest tokens (cookies) and authenticated users.
 - Backend: Fixed related_name 'items' referencing in Cart serializers/views.
@@ -179,50 +179,50 @@ STEP 2.3 & 2.4 — Shopping Cart (COMPLETE)
 - Frontend: Integrated CartDrawer into Header.tsx, linking shopping cart icon to state.
 
 STEP 2.5 — Checkout Flow (COMPLETE)
-───────────────────────────────────────────
+──────────────────────────────────────────
 - Backend: Created CheckoutAPIView transferring CartItems to OrderItems.
 - Backend: Decrements stock on ProductVariant safely within an atomic transaction.
 - Backend: Clears user Cart and outputs order_number.
 - Frontend: Created Checkout.tsx multi-step form capturing Address and Contact Info using react-hook-form.
 - Frontend: Form submission hits CheckoutAPIView and displays a successful confirmation screen on completion.
 
-ACCEPTANCE CHECKS PASSED:
+- ACCEPTANCE CHECKS PASSED:
   - Add to cart for guest creates cookie and returns cart total.
   - Cart Fetch returns cart items successfully.
   - Patching items updates quantity properly.
   - Checkout creates order, decrements stock, and clears the cart accurately.
 
-===============================================================
+==============================================================
 PHASE 3 — NAVIGATION & SEARCH: COMPLETE
 Date Completed: 2026-07-01
-===============================================================
+==============================================================
 
 STEP 3.1 & 3.2 — Predictive Search & Navigation (COMPLETE)
-───────────────────────────────────────────
+──────────────────────────────────────────
 - Backend: Updated `api_products` to accept `q` (icontains search on name/brand/category).
 - Backend: Created `api_search_products` specifically for the search bar dropdown, returning quick partial results.
 - Frontend: Created `SearchBar.tsx` featuring a Radix Popover and a 300ms debounced input.
 - Frontend: Refactored `Header.tsx` to use the new `SearchBar` and dynamic category query links.
 
 STEP 3.3 — Extended Contextual Filters (COMPLETE)
-───────────────────────────────────────────
+──────────────────────────────────────────
 - Backend: Added ORM filtering to `api_products` for size, color, skin_type, finish, is_vegan, and is_cruelty_free.
 - Frontend: Refactored `ProductCatalogue.tsx` to parse URL `searchParams` and pass them to the backend fetch call instead of relying on frontend-only filtering.
 - Frontend: Rebuilt `FilterPanel.tsx` to read/write directly to URL query parameters via `useSearchParams`.
 - Frontend: `FilterPanel.tsx` conditionally renders specific filters (e.g. Size/Color vs Skin Type/Finish) based on the active category param.
 
-ACCEPTANCE CHECKS PASSED:
+- ACCEPTANCE CHECKS PASSED:
   - Typing in the Search Bar opens a popover with live suggestions.
   - Clicking "Clothing" in the Header changes the URL, fetching only Clothing items and swapping the Filter Panel to show Sizes and Colors.
   - The Filter Panel reliably appends query strings to the URL and syncs with the API properly.
 
-===============================================================
+==============================================================
 PHASE 4 — AUTHENTICATION: COMPLETE
 Date Completed: 2026-07-01
-===============================================================
+==============================================================
 
 STEP 4.1 — Customer Auth & UX
-───────────────────────────────────────────
+──────────────────────────────────────────
 - Frontend: Created `AuthContext.tsx` to hold JWT tokens and user state in React memory. 
 - Frontend: Created an `api.ts` fetch wrapper interceptor that automatically catches 401 Unauthorized errors and pings `/api/auth/token/refresh/` using the secure HttpOnly cookie, then seamlessly retries the failed request.
 - Frontend: Built beautiful `Login.tsx` and `Register.tsx` screens using React Hook Form and Shadcn UI components.
@@ -230,41 +230,298 @@ STEP 4.1 — Customer Auth & UX
 - Frontend: Wired the `Header.tsx` user icon to route to `/account`.
 
 STEP 4.2 — Admin Security Hardening
-───────────────────────────────────────────
+──────────────────────────────────────────
 - Backend: Renamed the default Django `/admin/` route to `/rs-admin-panel/` to prevent automated bot scanning and credential stuffing.
 - Frontend: Created an isolated `AdminLayout.tsx` React dashboard template exclusively for staff users (Phase 7-9 foundation).
 - Frontend: Hardened the React `AdminLayout` route with an `is_staff` redirect boundary, completely ejecting non-staff users back to login.
 
-ACCEPTANCE CHECKS PASSED:
+- ACCEPTANCE CHECKS PASSED:
   - Users can register and are immediately logged in via a fresh JWT token payload.
   - The JWT refresh endpoint correctly utilizes cookies to restore sessions.
   - A fake 401 error successfully triggers the token refresh flow.
   - The default Django admin path is successfully obfuscated.
 
-===============================================================
+==============================================================
 PHASE 5 — TRUST & CONVENIENCE: COMPLETE
 Date Completed: 2026-07-01
-===============================================================
+==============================================================
 
 STEP 5.1 — Persisted Wishlist
-───────────────────────────────────────────
+──────────────────────────────────────────
 - Backend: Built `WishlistAPIView` that reads a secure `session_key` for guests or falls back to DB relations for authenticated accounts.
 - Frontend: Refactored `ProductCard` heart toggles to run asynchronously via `apiFetch`.
 - Frontend: Added `WishlistPage` routing and Heart icon to `Header`.
 
 STEP 5.2 & 5.3 — Order Tracking & Returns
-───────────────────────────────────────────
+──────────────────────────────────────────
 - Backend: Exposed `OrderRetrieveAPIView` for granular tracking status and `OrderReturnAPIView` for opening a return request.
 - Frontend: Built the `OrderTracking.tsx` stepper timeline layout.
 - Frontend: Built out the `MyAccount` dashboard with live order fetching and a prompt-based return initiation.
 
 STEP 5.4 — Comparison Tool
-───────────────────────────────────────────
+──────────────────────────────────────────
 - Frontend: Built `CompareContext` and a floating, sticky `CompareBar` across the app.
 - Frontend: Included a hover-activated 'Compare' checkbox on all `ProductCard` renders.
 - Frontend: Built the side-by-side data grid `ComparePage`.
 
-ACCEPTANCE CHECKS PASSED:
+- ACCEPTANCE CHECKS PASSED:
   - Wishlist persists beyond a browser refresh.
   - Return limits enforce the item must be 'Delivered'.
   - Max comparison is strictly capped at 3 items.
+
+==============================================================
+PHASE 6 — PERSONALIZATION: COMPLETE
+Date Completed: 2026-07-03
+==============================================================
+
+STEP 6.1 — Recently Viewed
+──────────────────────────────────────────
+- Backend: `engagement/views.py:80-151` (RecentlyViewedAPIView with GET/POST)
+- Frontend: `ProductDetail.tsx:36, 241` (call to API endpoints)
+- Model: `engagement/models.py:16-27` (RecentlyViewed with customer/session/product/viewed_at)
+- URL: `engagement/urls.py:7` (/api/recently-viewed/)
+
+STEP 6.2 — Recommendations
+──────────────────────────────────────────
+- Backend: `products/views.py:120-151` (ProductRecommendationsAPIView)
+- Frontend: `ProductDetail.tsx:232-236` (recommendations carousel)
+- Model: `products/models.py:48` (Product.related_products M2M)
+- URL: `products/urls.py:7` (<slug>/recommendations/)
+
+STEP 6.3 — Profile save
+──────────────────────────────────────────
+- Backend: `accounts/views.py:119-152` (ProfilePreferencesView)
+- Frontend: `ProductDetail.tsx:45-58` (auto-preselect user's default size)
+- Model: `accounts/models.py:48-57` (CustomerProfile with default_size, skin_type)
+- URL: `accounts/urls.py:17` (preferences/)
+
+- ACCEPTANCE CHECKS PASSED:
+  - Recently viewed persists across page loads.
+  - Recommendations show relevant products based on category.
+  - Profile preferences auto-populate PDP fields.
+
+==============================================================
+PHASE 7 — ADMIN OPERATIONS DASHBOARD: COMPLETE
+Date Completed: 2026-07-03
+==============================================================
+
+STEP 7.1 — Kanban Order Pipeline
+───────────────────────────────────────────
+- Backend: `orders/views.py` — AdminOrderListAPIView (GET /api/orders/admin/orders/)
+  AdminOrderStatusUpdateAPIView (PATCH /api/orders/admin/orders/<pk>/status/)
+  Appends tracking_history on each status change.
+- Frontend: `frontend/src/app/admin/OrdersKanban.tsx`
+  6-column Kanban layout (Pending Payment, Processing, Ready for Dispatch,
+  Out for Delivery, Delivered, Cancelled). Select dropdown per card to
+  move orders between statuses.
+- URL: `orders/urls.py` — admin/orders/, admin/orders/<pk>/status/
+
+STEP 7.2 — Low Stock Alerts
+───────────────────────────────────────────
+- Backend: `orders/views.py` — AdminLowStockAPIView (GET /api/orders/admin/inventory/low-stock/?threshold=N)
+  Returns variants with stock_quantity <= threshold.
+- Frontend: `frontend/src/app/admin/LowStockPanel.tsx`
+  Table view with adjustable threshold filter (3/5/10/15/20).
+- URL: `orders/urls.py` — admin/inventory/low-stock/
+
+STEP 7.3 — Variant Management UI
+───────────────────────────────────────────
+- Backend: `products/views.py` — AdminProductListAPIView (GET /api/products/admin/list/)
+  AdminVariantAPIView (GET/POST/PATCH/DELETE /api/products/admin/<id>/variants/)
+  AdminBulkVariantCreateAPIView (POST /api/products/admin/<id>/variants/bulk/)
+- Frontend: `frontend/src/app/admin/ProductVariantEditor.tsx`
+  Product list with variant count, then dialog with matrix-style
+  variant editor. Type-aware forms (clothing: size/color, cosmetics: shade/volume).
+- URLs: `products/urls.py` — admin/list/, admin/<id>/variants/, admin/<id>/variants/bulk/
+
+STEP 7.4 — Batch/Expiration Tracking
+───────────────────────────────────────────
+- Backend: `orders/views.py` — AdminExpiringProductsAPIView (GET /api/orders/admin/inventory/expiring/?days=N)
+  Returns variants with expiration_date within N days.
+- Frontend: `frontend/src/app/admin/ExpiringProductsPanel.tsx`
+  Table with expiry badges (Red=expired, Orange<=7d, Yellow<=14d).
+- URL: `orders/urls.py` — admin/inventory/expiring/
+
+STEP 7.5 — Bulk Image Upload
+───────────────────────────────────────────
+- Backend: `products/views.py` — AdminBulkImageUploadAPIView (POST /api/products/admin/<id>/images/)
+  AdminBulkVariantCreateAPIView handles reorder via PATCH.
+- Frontend: `frontend/src/app/admin/BulkImageUpload.tsx`
+  Split-panel: product list (left) + image management (right).
+  Dynamic rows for URL + type + display order. Reorder and delete.
+
+STEP 7.6 — Admin Dashboard & Navigation
+───────────────────────────────────────────
+- Backend: `orders/views.py` — AdminDashboardStatsView (GET /api/orders/admin/dashboard/)
+  Returns totalOrders, recentOrders, totalRevenue, totalCustomers,
+  pendingReturns, ordersByStatus.
+- Frontend: `frontend/src/app/admin/AdminDashboard.tsx`
+  4 stat cards + orders-by-status grid with color-coded badges.
+- Frontend: `frontend/src/app/admin/AdminLayout.tsx`
+  Sidebar with 7 nav items, active-route highlighting, staff-only guard.
+- Frontend: `frontend/src/app/App.tsx`
+  Nested routes: /admin/* with 7 child routes (dashboard, orders,
+  low-stock, expiring, variants, images, reviews).
+
+STEP 7.7 — Review Moderation
+───────────────────────────────────────────
+- Backend: `products/views.py` — AdminReviewModerationAPIView
+  (GET /api/products/admin/reviews/, PATCH /api/products/admin/reviews/<pk/>)
+  Returns pending (is_approved=False) reviews. Approve/reject toggle.
+- Frontend: `frontend/src/app/admin/ReviewModeration.tsx`
+  Card grid of pending reviews with star rating, approve/reject buttons.
+
+ACCEPTANCE CHECKS PASSED:
+  - `python manage.py check` returns no issues.
+  - Admin layout renders with sidebar navigation and staff-only guard.
+  - Kanban board loads orders grouped by status.
+  - Low stock panel shows variants below threshold with adjustable filter.
+  - Variant editor loads product list and opens variant dialog per product.
+  - Expiring panel shows cosmetics approaching expiration with day badges.
+  - Image upload panel allows adding multiple image URLs with type tagging.
+  - Dashboard shows revenue, order count, customer count, and status breakdown.
+
+==============================================================
+PHASE 8 — ADMIN MERCHANDISING & MARKETING: COMPLETE
+Date Completed: 2026-07-03
+==============================================================
+
+STEP 8.1 — Collections Manager (COMPLETE)
+───────────────────────────────────────────
+- Backend: `products/views.py` — AdminCollectionListAPIView (GET list with search)
+  AdminCollectionDetailAPIView (GET/POST/PATCH/DELETE) using CollectionSerializer
+  with product M2M assignment.
+- Frontend: `frontend/src/app/admin/CollectionsManager.tsx`
+  Table view with search; Dialog with name/slug/description/banner/active/order
+  fields + product multi-select checkboxes.
+- URL: `products/urls.py` — admin/collections/, admin/collections/<pk>/
+
+STEP 8.2 — Discount Rules
+───────────────────────────
+- Backend: `orders/views.py` — AdminDiscountListAPIView (GET/POST)
+  AdminDiscountDetailAPIView (PATCH/DELETE)
+- Serializer: `orders/serializers.py` — DiscountRuleSerializer (full model)
+- Frontend: `frontend/src/app/admin/DiscountsManager.tsx`
+  Table with code/type/config/active columns; Dialog with type select,
+  JSON config editor, date range, active toggle.
+- URL: `orders/urls.py` — admin/discounts/, admin/discounts/<pk>/
+
+STEP 8.3 — Abandoned Cart Recovery
+────────────────────────────────────
+- Backend: `orders/views.py` — AdminAbandonedCartsAPIView (GET /?days=N)
+  Annotates item_count + cart_total; returns customer email, items detail.
+- Frontend: `frontend/src/app/admin/AbandonedCartsPanel.tsx`
+  Table with expandable rows showing cart items; adjustable inactivity period
+  filter; mailto link on customer email.
+- URL: `orders/urls.py` — admin/abandoned-carts/
+
+- Navigation: `AdminLayout.tsx` updated with Discounts and Abandoned Carts nav links.
+- Routing: `App.tsx` updated with /admin/discounts and /admin/abandoned-carts routes.
+
+ACCEPTANCE CHECKS PASSED:
+  - `python manage.py check` returns no issues.
+  - Collections CRUD works with product assignment.
+  - Discount rules can be created/edited/deleted with JSON config.
+  - Abandoned carts list respects days param and shows item breakdown.
+
+==============================================================
+PHASE 9 — ADMIN ANALYTICS & REPORTING: COMPLETE
+Date Completed: 2026-07-03
+==============================================================
+
+STEP 9.1 — Analytics API Backend
+───────────────────────────────────
+- Backend: `orders/views.py` — AdminAnalyticsAPIView
+  GET /api/orders/admin/analytics/?period=daily|weekly|monthly|yearly
+  Returns 7 data sets:
+    - revenueOverTime: time-series of revenue (filtered by valid order statuses)
+    - topProducts: top 10 products by revenue with totalSold + totalRevenue
+    - revenueByCategory: category-level revenue aggregation
+    - customerGrowth: new customers + running total per bucket
+    - orderVolume: order count + revenue per bucket
+    - averageOrderValue: overall AOV for the period
+    - aovOverTime: AOV trend per bucket
+  Uses static _bucket_key helper for daily/weekly/monthly/yearly grouping.
+  Leverages OrderItem.quantity * OrderItem.unit_price for precise revenue calc,
+  Order.created_at for time bucketing, and User.date_joined for customer growth.
+
+STEP 9.2 — Analytics Dashboard Frontend
+──────────────────────────────────────────
+- Frontend: `frontend/src/app/admin/AnalyticsDashboard.tsx`
+  4 KPI cards (AOV, top product revenue, total orders, new customers)
+  Revenue over time bar chart (MiniBarChart component)
+  Top 10 products horizontal bar chart
+  Revenue by category horizontal bar chart
+  Order volume bar chart
+  AOV trend bar chart
+  Customer growth list with animated bars + cumulative badge
+  Period toggle: 30 Days / 90 Days / 12 Months / 5 Years
+
+STEP 9.3 — Routing & Navigation
+─────────────────────────────────
+- URL: `orders/urls.py` — admin/analytics/
+- Nav: `AdminLayout.tsx` — Analytics nav item with BarChart3 icon
+- Router: `App.tsx` — /admin/analytics route to AnalyticsDashboard
+
+ACCEPTANCE CHECKS PASSED:
+  - `python manage.py check` returns no issues.
+  - Analytics API accepts period param and returns structured time-series data.
+  - Frontend renders all charts and KPI cards with loading states.
+  - Period toggle correctly switches between daily/weekly/monthly/yearly views.
+
+==============================================================
+PHASE 10 — PERFORMANCE OPTIMIZATION & TECHNICAL SEO: COMPLETE
+Date Completed: 2026-07-03
+==============================================================
+
+STEP 10.1 — SEO Fixes
+───────────────────────
+- `frontend/index.html`: Removed `<meta name="robots" content="noindex, nofollow">`
+  that blocked all search engine indexing. Replaced with `index, follow`.
+- Updated `<title>` from "Peter Adjao-E-commerce Product Catalogue design"
+  to "Ramros Selection — Premium Clothing & Cosmetics".
+- Added Open Graph meta tags (og:title, og:description, og:type, og:url)
+  and Twitter Card tag for social sharing.
+
+STEP 10.2 — Database Query Optimization
+─────────────────────────────────────────
+- `products/views.py`: Converted `api_products()` (function-based, no pagination,
+  N+1 on category per product) to `ProductListAPIView` (DRF `ListAPIView` with
+  `PageNumberPagination`, `select_related('category')`).
+- `ProductDetailAPIView`: Added `select_related('category')` to queryset.
+- `AdminProductListAPIView`: Added `.annotate(variant_count=Count('variants'),
+  image_count=Count('product_images'))` to eliminate 2 of 3 N+1 queries per product.
+- Updated `products/urls.py` root path to use `ProductListAPIView.as_view()`.
+- Updated `frontend/src/app/components/ProductCatalogue.tsx`: reads
+  `data.results ?? data` to handle DRF paginated response format.
+
+STEP 10.3 — Database Indexes
+──────────────────────────────
+- `Product`: Added `db_index=True` to `rating`, `category`, `is_new`, `is_sale`,
+  `brand`, `is_vegan`, `is_cruelty_free`, `skin_type`, `finish`
+- `ProductVariant`: Added `db_index=True` to `size`, `color`, `shade`,
+  `stock_quantity`, `expiration_date`
+- `Order`: Added `db_index=True` to `status`, `created_at`
+- Migrations: `orders.0003`, `products.0004`
+
+STEP 10.4 — Response Compression & Caching
+────────────────────────────────────────────
+- `backend/settings/base.py`: Added `GZipMiddleware` to MIDDLEWARE
+- `backend/settings/base.py`: Added `CACHES` config with `LocMemCache`
+- `products/views.py`: Added `@method_decorator(cache_page(60*15))` to
+  `ProductRecommendationsAPIView` (15-minute cache)
+- `ProductDetailAPIView` queryset uses `select_related` (reduced N+1)
+
+STEP 10.5 — Frontend Image Optimization
+─────────────────────────────────────────
+- `ImageWithFallback.tsx`: Added `loading="lazy"` attribute to `<img>` tag,
+  enabling native lazy loading for all product images across the site.
+
+ACCEPTANCE CHECKS PASSED:
+  - `python manage.py check` returns no issues.
+  - `python manage.py makemigrations` + `migrate` complete without errors.
+  - Product list API now returns paginated JSON with `count/next/previous/results`.
+  - GZipMiddleware enabled for compressed responses.
+  - LocMemCache configured for view-level caching.
+  - Images load lazily via native browser `loading="lazy"`.
+  - SEO meta tags allow indexing and include Open Graph / Twitter Card data.

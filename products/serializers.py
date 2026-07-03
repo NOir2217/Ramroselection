@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Product, ProductVariant, ProductImage, SizeGuide, Category
+from .models import Product, ProductVariant, ProductImage, SizeGuide, Category, Collection
 from engagement.models import Review
 
 class ProductVariantSerializer(serializers.ModelSerializer):
@@ -51,8 +51,37 @@ class ProductSerializer(serializers.ModelSerializer):
         if obj.product_type == 'clothing' and obj.category:
             guide = obj.category.size_guides.filter(brand=obj.brand).first()
             if not guide:
-                # Fallback to category default size guide
                 guide = obj.category.size_guides.filter(brand__isnull=True).first()
             if guide:
                 return SizeGuideSerializer(guide).data
         return None
+
+
+class CollectionSerializer(serializers.ModelSerializer):
+    productCount = serializers.SerializerMethodField()
+    products = serializers.ListField(child=serializers.IntegerField(), write_only=True, required=False)
+    bannerImageUrl = serializers.CharField(source='banner_image_url', required=False, allow_blank=True, allow_null=True)
+    isActive = serializers.BooleanField(source='is_active', required=False)
+    displayOrder = serializers.IntegerField(source='display_order', required=False)
+
+    class Meta:
+        model = Collection
+        fields = ('id', 'name', 'slug', 'description', 'bannerImageUrl', 'isActive', 'displayOrder', 'productCount', 'products')
+
+    def get_productCount(self, obj):
+        return obj.products.count()
+
+    def create(self, validated_data):
+        product_ids = validated_data.pop('products', [])
+        collection = Collection.objects.create(**validated_data)
+        collection.products.set(product_ids)
+        return collection
+
+    def update(self, instance, validated_data):
+        product_ids = validated_data.pop('products', None)
+        for attr, value in validated_data.items():
+            setattr(instance, attr, value)
+        instance.save()
+        if product_ids is not None:
+            instance.products.set(product_ids)
+        return instance

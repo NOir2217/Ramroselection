@@ -28,7 +28,12 @@ class CartSerializer(serializers.ModelSerializer):
             for item in obj.items.all()
         )
 
-from .models import Order, OrderItem, ReturnRequest
+from .models import Order, OrderItem, ReturnRequest, DiscountRule
+
+class DiscountRuleSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = DiscountRule
+        fields = '__all__'
 
 class ReturnRequestSerializer(serializers.ModelSerializer):
     class Meta:

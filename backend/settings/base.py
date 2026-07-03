@@ -30,7 +30,8 @@ INSTALLED_APPS = [
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
-    'corsheaders.middleware.CorsMiddleware',           # must be before CommonMiddleware
+    'django.middleware.gzip.GZipMiddleware',
+    'corsheaders.middleware.CorsMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
@@ -62,8 +63,6 @@ DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
         'NAME': BASE_DIR / 'db.sqlite3',
-        # NOTE: SQLite is used for development. Migrate to PostgreSQL before
-        # real customer traffic — SQLite does not handle concurrent writes at scale.
     }
 }
 
@@ -114,4 +113,12 @@ X_FRAME_OPTIONS = 'DENY'
 SECURE_CONTENT_TYPE_NOSNIFF = True
 
 # ─── Custom admin URL (non-default to reduce attack surface) ─────────────────
-ADMIN_URL = config('ADMIN_URL', default='ramro-admin/')
+ADMIN_URL = config('ADMIN_URL', default='rs-admin-panel/')
+
+# ─── Caching (local memory for dev; override in production.py) ──────────────
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'ramroselection',
+    }
+}
