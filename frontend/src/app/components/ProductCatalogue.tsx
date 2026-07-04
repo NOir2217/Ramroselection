@@ -181,11 +181,7 @@ export function ProductCatalogue() {
           {filteredAndSortedProducts.length === 0 ? (
             <div className="text-center py-12">
               <p className="text-muted-foreground">No products found matching your filters.</p>
-              <Button variant="outline" onClick={() => setFilters({
-                categories: [],
-                priceRange: [0, 50000],
-                minRating: 0,
-              })} className="mt-4">
+              <Button variant="outline" onClick={() => setSearchParams(new URLSearchParams())} className="mt-4">
                 Clear Filters
               </Button>
             </div>

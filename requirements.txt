@@ -1,0 +1,6 @@
+Django>=6.0.6
+djangorestframework
+djangorestframework-simplejwt
+django-cors-headers
+python-decouple
+django-ratelimit

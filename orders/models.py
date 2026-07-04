@@ -45,15 +45,16 @@ class Order(models.Model):
     tracking_history = models.JSONField(default=list, blank=True)
 
     def save(self, *args, **kwargs):
-        if not self.order_number:
-            # Generate the next order number based on current count/max ID
-            last_order = Order.objects.all().order_by('id').last()
-            if last_order:
-                next_id = last_order.id + 1
-            else:
-                next_id = 1
-            self.order_number = f"RS-{next_id:06d}"
-        super().save(*args, **kwargs)
+        is_new = self._state.adding
+        if is_new and not self.order_number:
+            import uuid
+            # Assign a temp unique number to satisfy DB unique constraint
+            self.order_number = f"TEMP-{uuid.uuid4().hex[:10]}"
+            super().save(*args, **kwargs)
+            self.order_number = f"RS-{self.id:06d}"
+            super().save(update_fields=['order_number'])
+        else:
+            super().save(*args, **kwargs)
 
     def __str__(self):
         return f"Order {self.order_number} ({self.status})"

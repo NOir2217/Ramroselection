@@ -1,3 +1,4 @@
+from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
@@ -276,7 +277,7 @@ class AdminBulkImageUploadAPIView(APIView):
 class AdminReviewModerationAPIView(APIView):
     permission_classes = [IsAdminUser]
 
-    def get(self, request):
+    def get(self, request, pk=None):
         from engagement.models import Review
         pending = Review.objects.filter(is_approved=False).select_related('product', 'customer').order_by('-created_at')
 
@@ -334,6 +335,13 @@ class AdminCollectionListAPIView(APIView):
             })
         return Response(data)
 
+    def post(self, request):
+        serializer = CollectionSerializer(data=request.data)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
 
 class AdminCollectionDetailAPIView(APIView):
     permission_classes = [IsAdminUser]
@@ -342,13 +350,6 @@ class AdminCollectionDetailAPIView(APIView):
         collection = get_object_or_404(Collection, id=pk)
         serializer = CollectionSerializer(collection)
         return Response(serializer.data)
-
-    def post(self, request):
-        serializer = CollectionSerializer(data=request.data)
-        if serializer.is_valid():
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def patch(self, request, pk):
         collection = get_object_or_404(Collection, id=pk)

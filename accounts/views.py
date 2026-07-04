@@ -2,7 +2,7 @@ from django.conf import settings
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
@@ -76,7 +76,7 @@ class LogoutView(APIView):
     """
     Logout endpoint. Blacklists the refresh token and clears the cookie.
     """
-    permission_classes = (AllowAny,)
+    permission_classes = (IsAuthenticated,)
     
     def post(self, request):
         try:
@@ -89,7 +89,7 @@ class LogoutView(APIView):
             response.delete_cookie(settings.JWT_COOKIE_NAME, samesite=settings.JWT_COOKIE_SAMESITE)
             return response
         except Exception as e:
-            return Response({"detail": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+            return Response({"detail": "An error occurred during logout."}, status=status.HTTP_400_BAD_REQUEST)
 
 class RegisterView(APIView):
     """

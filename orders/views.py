@@ -1,4 +1,5 @@
 import uuid
+from decimal import Decimal
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -62,11 +63,18 @@ class CartItemAPIView(APIView):
         variant_id = request.data.get('variantId')
         quantity = request.data.get('quantity', 1)
 
+        try:
+            qty_int = int(quantity)
+            if qty_int <= 0:
+                return Response({"detail": "Quantity must be greater than 0."}, status=status.HTTP_400_BAD_REQUEST)
+        except (ValueError, TypeError):
+            return Response({"detail": "Invalid quantity value."}, status=status.HTTP_400_BAD_REQUEST)
+
         variant = get_object_or_404(ProductVariant, id=variant_id)
         
-        cart_item, created = CartItem.objects.get_or_create(cart=cart, variant=variant, defaults={'quantity': quantity})
+        cart_item, created = CartItem.objects.get_or_create(cart=cart, variant=variant, defaults={'quantity': qty_int})
         if not created:
-            cart_item.quantity += int(quantity)
+            cart_item.quantity += qty_int
             cart_item.save()
 
         serializer = CartSerializer(cart)
@@ -79,20 +87,39 @@ class CartItemAPIView(APIView):
 class CartItemDetailAPIView(APIView):
     permission_classes = [AllowAny]
     
+    def get_cart(self, request):
+        if request.user.is_authenticated:
+            cart, _ = Cart.objects.get_or_create(customer=request.user.customerprofile)
+        else:
+            cart_token = request.COOKIES.get('cart_token')
+            if cart_token:
+                try:
+                    cart = Cart.objects.get(id=cart_token, customer__isnull=True)
+                except (Cart.DoesNotExist, ValueError):
+                    cart = Cart.objects.create()
+            else:
+                cart = Cart.objects.create()
+        return cart
+    
     def patch(self, request, pk):
-        cart_item = get_object_or_404(CartItem, id=pk)
+        cart = self.get_cart(request)
+        cart_item = get_object_or_404(CartItem, id=pk, cart=cart)
         quantity = request.data.get('quantity')
         if quantity is not None:
-            if int(quantity) <= 0:
-                cart_item.delete()
-            else:
-                cart_item.quantity = int(quantity)
-                cart_item.save()
-        return Response(CartSerializer(cart_item.cart).data)
+            try:
+                qty_int = int(quantity)
+                if qty_int <= 0:
+                    cart_item.delete()
+                else:
+                    cart_item.quantity = qty_int
+                    cart_item.save()
+            except (ValueError, TypeError):
+                return Response({"detail": "Invalid quantity value."}, status=status.HTTP_400_BAD_REQUEST)
+        return Response(CartSerializer(cart).data)
 
     def delete(self, request, pk):
-        cart_item = get_object_or_404(CartItem, id=pk)
-        cart = cart_item.cart
+        cart = self.get_cart(request)
+        cart_item = get_object_or_404(CartItem, id=pk, cart=cart)
         cart_item.delete()
         return Response(CartSerializer(cart).data)
 
@@ -124,17 +151,29 @@ class CheckoutAPIView(APIView):
         if not cart or not cart.items.exists():
             return Response({"detail": "Cart is empty."}, status=status.HTTP_400_BAD_REQUEST)
         
-        # Calculate totals
-        subtotal = sum(
-            item.quantity * (item.variant.product.price + item.variant.extra_price)
-            for item in cart.items.all()
-        )
-        
-        shipping_fee = 10.00 # hardcoded placeholder
-        total = float(subtotal) + shipping_fee
-        
-        # Create Guest info or use authenticated user
         guest_email = request.data.get('email')
+        if not request.user.is_authenticated and not guest_email:
+            return Response({"detail": "Email is required for guest checkout."}, status=status.HTTP_400_BAD_REQUEST)
+
+        # Sort items by variant id to lock them in a deterministic order and prevent deadlocks
+        items_sorted = sorted(cart.items.all(), key=lambda x: x.variant.id)
+        
+        # Lock rows and validate stock first
+        subtotal = Decimal('0.00')
+        locked_variants = []
+        
+        for item in items_sorted:
+            variant = ProductVariant.objects.select_for_update().get(id=item.variant.id)
+            if variant.stock_quantity < item.quantity:
+                return Response(
+                    {"detail": f"Insufficient stock for {variant.product.name} ({variant.size or ''} {variant.color or ''}). Available: {variant.stock_quantity}"},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            locked_variants.append((variant, item.quantity))
+            subtotal += item.quantity * (variant.product.price + variant.extra_price)
+            
+        shipping_fee = Decimal('10.00')
+        total = subtotal + shipping_fee
         
         order = Order.objects.create(
             customer=request.user.customerprofile if request.user.is_authenticated else None,
@@ -146,22 +185,29 @@ class CheckoutAPIView(APIView):
         )
         
         # Transfer cart items to order items and decrement stock
-        for item in cart.items.all():
+        for variant, quantity in locked_variants:
             OrderItem.objects.create(
                 order=order,
-                variant=item.variant,
-                quantity=item.quantity,
-                unit_price=item.variant.product.price + item.variant.extra_price
+                variant=variant,
+                quantity=quantity,
+                unit_price=variant.product.price + variant.extra_price
             )
-            item.variant.stock_quantity -= item.quantity
-            item.variant.save()
+            variant.stock_quantity -= quantity
+            variant.save()
             
         # Clear cart
         cart.items.all().delete()
         
+        # Store guest order in session for authorization
+        if not request.user.is_authenticated:
+            placed_orders = request.session.get('placed_orders', [])
+            placed_orders.append(order.order_number)
+            request.session['placed_orders'] = placed_orders
+            request.session.modified = True
+        
         response = Response({
             "order_number": order.order_number,
-            "total": total,
+            "total": str(total),
             "status": "pending_payment"
         }, status=status.HTTP_201_CREATED)
         
@@ -187,6 +233,11 @@ class OrderRetrieveAPIView(APIView):
         # Verify access
         if order.customer:
             if not request.user.is_authenticated or request.user.customerprofile != order.customer:
+                return Response({"detail": "Not found"}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            # Guest order: verify it was placed in the current session
+            placed_orders = request.session.get('placed_orders', [])
+            if order.order_number not in placed_orders:
                 return Response({"detail": "Not found"}, status=status.HTTP_404_NOT_FOUND)
                 
         serializer = OrderSerializer(order)

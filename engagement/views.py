@@ -1,4 +1,6 @@
 import uuid
+from django.conf import settings
+from django.db import IntegrityError
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -45,17 +47,27 @@ class WishlistAPIView(APIView):
         if exists:
             return Response({"message": "Already in wishlist"}, status=status.HTTP_200_OK)
             
-        item = WishlistItem.objects.create(
-            customer=customer,
-            session_key=session_key,
-            product_id=product_id
-        )
+        try:
+            item = WishlistItem.objects.create(
+                customer=customer,
+                session_key=session_key,
+                product_id=product_id
+            )
+        except IntegrityError:
+            return Response({"message": "Already in wishlist"}, status=status.HTTP_200_OK)
         
         serializer = WishlistItemSerializer(item)
         response = Response(serializer.data, status=status.HTTP_201_CREATED)
         
         if not is_auth and not request.COOKIES.get('session_key'):
-            response.set_cookie('session_key', session_key, max_age=60*60*24*30) # 30 days
+            response.set_cookie(
+                'session_key',
+                session_key,
+                max_age=60*60*24*30,
+                httponly=True,
+                secure=not settings.DEBUG,
+                samesite='Lax'
+            )
             
         return response
 
@@ -69,6 +81,8 @@ class WishlistItemAPIView(APIView):
                 item = WishlistItem.objects.get(pk=pk, customer=request.user.customerprofile)
             else:
                 session_key = request.COOKIES.get('session_key')
+                if not session_key:
+                    return Response({"detail": "Session key required."}, status=status.HTTP_400_BAD_REQUEST)
                 item = WishlistItem.objects.get(pk=pk, session_key=session_key)
             
             item.delete()
@@ -146,6 +160,13 @@ class RecentlyViewedAPIView(APIView):
         response = Response({"status": "recorded"}, status=status.HTTP_201_CREATED)
 
         if not is_auth and not request.COOKIES.get('session_key'):
-            response.set_cookie('session_key', session_key, max_age=60 * 60 * 24 * 30)
+            response.set_cookie(
+                'session_key',
+                session_key,
+                max_age=60*60*24*30,
+                httponly=True,
+                secure=not settings.DEBUG,
+                samesite='Lax'
+            )
 
         return response

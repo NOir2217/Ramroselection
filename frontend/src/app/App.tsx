@@ -1,7 +1,7 @@
 import { Routes, Route } from "react-router";
 import { Header } from "./components/Header";
 import { ProductCatalogue } from "./components/ProductCatalogue";
-import { Footer } from "./components/ui/sonner";
+import { Footer } from "./components/Footer";
 import { Toaster } from "./components/ui/sonner";
 import { ProductDetail } from "./pages/ProductDetail";
 import { Checkout } from "./pages/Checkout";

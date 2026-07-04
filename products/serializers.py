@@ -6,11 +6,13 @@ class ProductVariantSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductVariant
         fields = '__all__'
+        read_only_fields = ('product',)
 
 class ProductImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = ProductImage
         fields = '__all__'
+        read_only_fields = ('product',)
 
 class SizeGuideSerializer(serializers.ModelSerializer):
     categoryName = serializers.CharField(source='category.name', read_only=True)
