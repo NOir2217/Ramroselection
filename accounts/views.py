@@ -30,8 +30,13 @@ class CustomTokenObtainPairView(TokenObtainPairView):
         except TokenError as e:
             raise InvalidToken(e.args[0])
 
+        # Get the user instance from serializer
+        user = serializer.user
         response = Response(
-            {"access": serializer.validated_data.get("access")},
+            {
+                "access": serializer.validated_data.get("access"),
+                "user": UserSerializer(user).data
+            },
             status=status.HTTP_200_OK
         )
         refresh_token = serializer.validated_data.get("refresh")
@@ -60,8 +65,20 @@ class CustomTokenRefreshView(TokenRefreshView):
         except TokenError as e:
             raise InvalidToken(e.args[0])
 
+        # Get user details from the refresh token payload
+        try:
+            token = RefreshToken(refresh_token)
+            user_id = token.payload.get('user_id')
+            user = User.objects.get(id=user_id)
+            serialized_user = UserSerializer(user).data
+        except Exception:
+            serialized_user = None
+
         response = Response(
-            {"access": serializer.validated_data.get("access")},
+            {
+                "access": serializer.validated_data.get("access"),
+                "user": serialized_user
+            },
             status=status.HTTP_200_OK
         )
         
@@ -117,6 +134,7 @@ class RegisterView(APIView):
 
 
 class ProfilePreferencesView(APIView):
+    permission_classes = [IsAuthenticated]
     """
     GET  /api/auth/preferences/ → returns default_size, skin_type
     PATCH /api/auth/preferences/ → updates default_size, skin_type

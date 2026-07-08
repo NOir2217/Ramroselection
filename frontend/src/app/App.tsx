@@ -24,41 +24,47 @@ import { WishlistPage } from "./pages/WishlistPage";
 import { OrderTracking } from "./pages/OrderTracking";
 import { ComparePage } from "./pages/ComparePage";
 import { CompareBar } from "./components/CompareBar";
+import { CartProvider } from "./context/CartContext";
+import { WishlistProvider } from "./context/WishlistContext";
 
 export default function App() {
   return (
-    <div className="min-h-screen bg-background">
-      <Header />
-      <main>
-        <Routes>
-          <Route path="/" element={<ProductCatalogue />} />
-          <Route path="/product/:slug" element={<ProductDetail />} />
-          <Route path="/checkout" element={<Checkout />} />
-          <Route path="/wishlist" element={<WishlistPage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/account" element={<MyAccount />} />
-          <Route path="/orders/:orderNumber" element={<OrderTracking />} />
-          <Route path="/compare" element={<ComparePage />} />
+    <CartProvider>
+      <WishlistProvider>
+        <div className="min-h-screen bg-background">
+          <Header />
+          <main>
+            <Routes>
+              <Route path="/" element={<ProductCatalogue />} />
+              <Route path="/product/:slug" element={<ProductDetail />} />
+              <Route path="/checkout" element={<Checkout />} />
+              <Route path="/wishlist" element={<WishlistPage />} />
+              <Route path="/login" element={<Login />} />
+              <Route path="/register" element={<Register />} />
+              <Route path="/account" element={<MyAccount />} />
+              <Route path="/orders/:orderNumber" element={<OrderTracking />} />
+              <Route path="/compare" element={<ComparePage />} />
 
-          <Route path="/admin" element={<AdminLayout />}>
-            <Route index element={<AdminDashboard />} />
-            <Route path="orders" element={<OrdersKanban />} />
-            <Route path="low-stock" element={<LowStockPanel />} />
-            <Route path="expiring" element={<ExpiringProductsPanel />} />
-            <Route path="variants" element={<ProductVariantEditor />} />
-            <Route path="images" element={<BulkImageUpload />} />
-            <Route path="reviews" element={<ReviewModeration />} />
-            <Route path="collections" element={<CollectionsManager />} />
-            <Route path="discounts" element={<DiscountsManager />} />
-            <Route path="analytics" element={<AnalyticsDashboard />} />
-            <Route path="abandoned-carts" element={<AbandonedCartsPanel />} />
-          </Route>
-        </Routes>
-      </main>
-      <CompareBar />
-      <Footer />
-      <Toaster />
-    </div>
+              <Route path="/admin" element={<AdminLayout />}>
+                <Route index element={<AdminDashboard />} />
+                <Route path="orders" element={<OrdersKanban />} />
+                <Route path="low-stock" element={<LowStockPanel />} />
+                <Route path="expiring" element={<ExpiringProductsPanel />} />
+                <Route path="variants" element={<ProductVariantEditor />} />
+                <Route path="images" element={<BulkImageUpload />} />
+                <Route path="reviews" element={<ReviewModeration />} />
+                <Route path="collections" element={<CollectionsManager />} />
+                <Route path="discounts" element={<DiscountsManager />} />
+                <Route path="analytics" element={<AnalyticsDashboard />} />
+                <Route path="abandoned-carts" element={<AbandonedCartsPanel />} />
+              </Route>
+            </Routes>
+          </main>
+          <CompareBar />
+          <Footer />
+          <Toaster />
+        </div>
+      </WishlistProvider>
+    </CartProvider>
   );
 }

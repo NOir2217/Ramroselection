@@ -1,15 +1,22 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useForm } from "react-hook-form";
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { toast } from "sonner";
-import { Link } from "react-router";
+import { Link, useNavigate } from "react-router";
+import { API_BASE_URL } from "@/config";
+import { useAuth } from "../context/AuthContext";
+import { useCart } from "../context/CartContext";
 
 export function Checkout() {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState<any>(null);
+  const { user } = useAuth();
+  const { fetchCart } = useCart();
+  const [continueAsGuest, setContinueAsGuest] = useState(false);
+  const navigate = useNavigate();
   
-  const { register, handleSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, formState: { errors }, reset } = useForm({
     defaultValues: {
       email: '',
       firstName: '',
@@ -21,11 +28,27 @@ export function Checkout() {
     }
   });
 
+  // Pre-fill email for logged-in users
+  useEffect(() => {
+    if (user) {
+      reset({
+        email: user.email || '',
+        firstName: '',
+        lastName: '',
+        address: '',
+        city: '',
+        postalCode: '',
+        phone: ''
+      });
+    }
+  }, [user, reset]);
+
   const onSubmit = (data: any) => {
     setLoading(true);
-    fetch('http://127.0.0.1:8000/api/checkout/', {
+    fetch(`${API_BASE_URL}/api/checkout/`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
+      credentials: 'include', // Ensure cart_token cookie is transmitted
       body: JSON.stringify({ email: data.email, shipping_info: data })
     })
     .then(res => res.json().then(json => ({ ok: res.ok, data: json })))
@@ -34,6 +57,8 @@ export function Checkout() {
       if (ok) {
         setSuccess(data);
         toast.success("Order placed successfully!");
+        // Refresh cart in context since it's cleared now
+        fetchCart();
       } else {
         toast.error(data.detail || "Failed to place order.");
       }
@@ -52,6 +77,47 @@ export function Checkout() {
         <Link to="/">
           <Button size="lg">Continue Shopping</Button>
         </Link>
+      </div>
+    );
+  }
+
+  // If user is guest and hasn't chosen to continue as guest, show the options screen
+  if (!user && !continueAsGuest) {
+    return (
+      <div className="max-w-md mx-auto px-4 py-16 min-h-[calc(100vh-10rem)] flex items-center justify-center">
+        <div className="w-full space-y-6 bg-card p-8 border rounded-xl shadow-sm text-center">
+          <h1 className="text-2xl font-bold">Checkout</h1>
+          <p className="text-muted-foreground text-sm leading-relaxed">
+            Please sign in to proceed with your saved addresses and loyalty rewards, or checkout as a guest.
+          </p>
+          <div className="flex flex-col gap-3 pt-2">
+            <Button 
+              className="w-full h-11 text-base font-medium"
+              onClick={() => navigate("/login", { state: { from: { pathname: "/checkout" } } })}
+            >
+              Sign In to Account
+            </Button>
+            <Button 
+              variant="outline" 
+              className="w-full h-11 text-base font-medium"
+              onClick={() => navigate("/register", { state: { from: { pathname: "/checkout" } } })}
+            >
+              Create a New Account
+            </Button>
+            <div className="relative flex items-center py-2">
+              <div className="flex-grow border-t border-border"></div>
+              <span className="flex-shrink mx-4 text-xs text-muted-foreground uppercase">or</span>
+              <div className="flex-grow border-t border-border"></div>
+            </div>
+            <Button 
+              variant="secondary" 
+              className="w-full h-11 text-base font-medium"
+              onClick={() => setContinueAsGuest(true)}
+            >
+              Continue as Guest
+            </Button>
+          </div>
+        </div>
       </div>
     );
   }

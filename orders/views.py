@@ -3,7 +3,7 @@ from decimal import Decimal
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework.permissions import AllowAny
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from django.shortcuts import get_object_or_404
 from .models import Cart, CartItem
 from products.models import ProductVariant
@@ -213,10 +213,52 @@ class CheckoutAPIView(APIView):
         
         return response
 
+class CartMergeAPIView(APIView):
+    """
+    POST /api/cart/merge/
+    Called after login to merge guest cart (identified by cart_token cookie) into the
+    authenticated user's cart. Idempotent — safe to call multiple times.
+    """
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        cart_token = request.COOKIES.get('cart_token')
+        if not cart_token:
+            return Response({"detail": "No guest cart to merge."}, status=status.HTTP_200_OK)
+
+        try:
+            guest_cart = Cart.objects.get(id=cart_token, customer__isnull=True)
+        except (Cart.DoesNotExist, ValueError):
+            return Response({"detail": "No guest cart found."}, status=status.HTTP_200_OK)
+
+        # Get or create the authenticated user's cart
+        user_cart, _ = Cart.objects.get_or_create(customer=request.user.customerprofile)
+
+        for guest_item in guest_cart.items.all():
+            existing, created = CartItem.objects.get_or_create(
+                cart=user_cart,
+                variant=guest_item.variant,
+                defaults={'quantity': guest_item.quantity}
+            )
+            if not created:
+                existing.quantity += guest_item.quantity
+                existing.save()
+
+        # Delete the guest cart now that it's merged
+        guest_cart.delete()
+
+        serializer = CartSerializer(user_cart)
+        response = Response(serializer.data, status=status.HTTP_200_OK)
+        # Clear the guest cart cookie
+        response.delete_cookie('cart_token')
+        return response
+
 from .models import ReturnRequest, DiscountRule, Cart
 from .serializers import OrderSerializer, ReturnRequestSerializer, DiscountRuleSerializer
 
 class OrderListAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    
     def get(self, request):
         if not request.user.is_authenticated:
             return Response({"detail": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
@@ -244,6 +286,8 @@ class OrderRetrieveAPIView(APIView):
         return Response(serializer.data)
 
 class OrderReturnAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+    
     def post(self, request, item_id):
         if not request.user.is_authenticated:
             return Response({"detail": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)

@@ -1,12 +1,16 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useNavigate, useLocation } from "react-router";
+import { API_BASE_URL } from "@/config";
+import { setAccessTokenInMemory } from "../utils/api";
 
 interface User {
   id: number;
   email: string;
+  username: string;
   first_name: string;
   last_name: string;
   is_staff: boolean;
+  profile?: any;
 }
 
 interface AuthContextType {
@@ -27,11 +31,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const location = useLocation();
 
   useEffect(() => {
-    // On mount, silently try to refresh token using HttpOnly cookie
     let active = true;
-    
-    fetch("/api/auth/token/refresh/", {
+
+    fetch(`${API_BASE_URL}/api/auth/token/refresh/`, {
       method: "POST",
+      credentials: "include",
     })
       .then(res => {
         if (!res.ok) throw new Error("No session");
@@ -40,15 +44,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       .then(data => {
         if (active) {
           setAccessToken(data.access);
-          // If we had a user endpoint we'd fetch it here.
-          // For now we will rely on decoding the JWT if needed, or simply let the app know we are authed.
-          // In a real app we'd fetch /api/auth/me/ to get full user details.
-          setUser({ id: 1, email: "user@example.com", first_name: "User", last_name: "", is_staff: false }); // Mock user
+          setAccessTokenInMemory(data.access);
+          if (data.user) {
+            setUser(data.user);
+          } else {
+            setUser(null);
+          }
         }
       })
       .catch(() => {
         if (active) {
           setAccessToken(null);
+          setAccessTokenInMemory(null);
           setUser(null);
         }
       })
@@ -61,24 +68,33 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = (access: string, userData?: User) => {
     setAccessToken(access);
+    setAccessTokenInMemory(access);
     if (userData) {
       setUser(userData);
     } else {
-      setUser({ id: 1, email: "user@example.com", first_name: "User", last_name: "", is_staff: false });
+      setUser(null);
     }
   };
 
   const logout = async () => {
     try {
-      await fetch("/api/auth/token/logout/", { method: "POST" });
+      await fetch(`${API_BASE_URL}/api/auth/token/logout/`, { 
+        method: "POST",
+        headers: {
+          "Authorization": `Bearer ${accessToken}`
+        },
+        credentials: "include"
+      });
     } catch (e) {
       console.error("Logout error", e);
     } finally {
       setAccessToken(null);
+      setAccessTokenInMemory(null);
       setUser(null);
       navigate("/login");
     }
   };
+
 
   return (
     <AuthContext.Provider value={{ user, accessToken, isLoading, login, logout }}>

@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "@/config";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { Link, useNavigate, useLocation } from "react-router";
@@ -8,10 +9,13 @@ import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "../components/ui/card";
 
+import { useCart } from "../context/CartContext";
+
 export function Login() {
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const { mergeGuestCart } = useCart();
   const navigate = useNavigate();
   const location = useLocation();
 
@@ -20,7 +24,7 @@ export function Login() {
   const onSubmit = async (data: any) => {
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/token/", {
+      const res = await fetch(`${API_BASE_URL}/api/auth/token/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
@@ -33,6 +37,11 @@ export function Login() {
       }
       
       login(json.access, json.user);
+      try {
+        await mergeGuestCart();
+      } catch (mergeErr) {
+        console.error("Cart merge error:", mergeErr);
+      }
       toast.success("Successfully logged in");
       navigate(from, { replace: true });
     } catch (err: any) {

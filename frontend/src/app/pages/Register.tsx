@@ -1,3 +1,4 @@
+import { API_BASE_URL } from "@/config";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
@@ -8,10 +9,13 @@ import { toast } from "sonner";
 import { useAuth } from "../context/AuthContext";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "../components/ui/card";
 
+import { useCart } from "../context/CartContext";
+
 export function Register() {
   const { register, handleSubmit, formState: { errors }, watch } = useForm();
   const [loading, setLoading] = useState(false);
   const { login } = useAuth();
+  const { mergeGuestCart } = useCart();
   const navigate = useNavigate();
 
   const password = watch("password");
@@ -19,7 +23,7 @@ export function Register() {
   const onSubmit = async (data: any) => {
     setLoading(true);
     try {
-      const res = await fetch("/api/auth/register/", {
+      const res = await fetch(`${API_BASE_URL}/api/auth/register/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
@@ -38,6 +42,11 @@ export function Register() {
       
       // Automatically login
       login(json.access, json.user);
+      try {
+        await mergeGuestCart();
+      } catch (mergeErr) {
+        console.error("Cart merge error:", mergeErr);
+      }
       toast.success("Successfully created account");
       navigate("/");
     } catch (err: any) {

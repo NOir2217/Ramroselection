@@ -5,14 +5,15 @@ import { useState } from "react";
 import { CartDrawer } from "./CartDrawer";
 import { Link } from "react-router";
 import { SearchBar } from "./SearchBar";
+import { useCart } from "../context/CartContext";
 
 interface HeaderProps {
-  cartItemsCount?: number;
   onMenuToggle?: () => void;
 }
 
-export function Header({ cartItemsCount = 0, onMenuToggle }: HeaderProps) {
+export function Header({ onMenuToggle }: HeaderProps) {
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const { itemCount } = useCart();
 
   return (
     <>
@@ -39,7 +40,7 @@ export function Header({ cartItemsCount = 0, onMenuToggle }: HeaderProps) {
           {/* Navigation - Hidden on mobile */}
           <nav className="hidden md:flex items-center gap-6">
             <Link to="/" className="hover:text-primary transition-colors font-medium">Home</Link>
-            <Link to="/?category=clothing" className="hover:text-primary transition-colors font-medium">Clothing</Link>
+            <Link to="/?category=bags" className="hover:text-primary transition-colors font-medium">Bags</Link>
             <Link to="/?category=cosmetics" className="hover:text-primary transition-colors font-medium">Cosmetics</Link>
           </nav>
 
@@ -60,12 +61,12 @@ export function Header({ cartItemsCount = 0, onMenuToggle }: HeaderProps) {
             </Link>
             <Button variant="ghost" size="sm" className="relative" onClick={() => setIsCartOpen(true)}>
               <ShoppingCart className="h-5 w-5" />
-              {cartItemsCount > 0 && (
+              {itemCount > 0 && (
                 <Badge 
                   variant="destructive" 
                   className="absolute -top-1 -right-1 h-5 w-5 flex items-center justify-center p-0 text-xs rounded-full"
                 >
-                  {cartItemsCount}
+                  {itemCount}
                 </Badge>
               )}
             </Button>

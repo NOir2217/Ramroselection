@@ -1,7 +1,9 @@
 import { X, Trash2, ShoppingBag } from "lucide-react";
 import { Button } from "./ui/button";
-import { useEffect, useState } from "react";
-import { Link } from "react-router";
+import { useEffect } from "react";
+import { Link, useNavigate } from "react-router";
+import { useCart } from "../context/CartContext";
+import { useAuth } from "../context/AuthContext";
 
 interface CartDrawerProps {
   isOpen: boolean;
@@ -9,50 +11,33 @@ interface CartDrawerProps {
 }
 
 export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
-  const [cart, setCart] = useState<any>(null);
-  const [loading, setLoading] = useState(false);
+  const { cart, isLoading, fetchCart, updateQuantity, removeItem } = useCart();
+  const { user } = useAuth();
+  const navigate = useNavigate();
 
-  const fetchCart = () => {
-    setLoading(true);
-    fetch('http://127.0.0.1:8000/api/cart/')
-      .then(res => res.json())
-      .then(data => {
-        setCart(data);
-        setLoading(false);
-      })
-      .catch(() => setLoading(false));
-  };
-
+  // Re-fetch cart every time drawer opens to get fresh server state
   useEffect(() => {
     if (isOpen) {
       fetchCart();
     }
-  }, [isOpen]);
+  }, [isOpen, fetchCart]);
 
-  const updateQuantity = (itemId: number, newQuantity: number) => {
-    if (newQuantity < 1) return;
-    fetch(`http://127.0.0.1:8000/api/cart/items/${itemId}/`, {
-      method: 'PATCH',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ quantity: newQuantity })
-    })
-    .then(res => res.json())
-    .then(data => setCart(data));
-  };
-
-  const removeItem = (itemId: number) => {
-    fetch(`http://127.0.0.1:8000/api/cart/items/${itemId}/`, {
-      method: 'DELETE'
-    })
-    .then(res => res.json())
-    .then(data => setCart(data));
+  const handleCheckout = () => {
+    onClose();
+    if (user) {
+      // Logged-in user: go straight to checkout
+      navigate("/checkout");
+    } else {
+      // Guest: go to checkout — the checkout page will show login/register/guest options
+      navigate("/checkout");
+    }
   };
 
   if (!isOpen) return null;
 
   return (
     <>
-      <div 
+      <div
         className="fixed inset-0 bg-black/50 z-50 transition-opacity"
         onClick={onClose}
       />
@@ -68,7 +53,7 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
         </div>
 
         <div className="flex-1 overflow-y-auto p-4 flex flex-col gap-4">
-          {loading ? (
+          {isLoading ? (
             <p className="text-center text-muted-foreground mt-10">Loading...</p>
           ) : !cart?.items?.length ? (
             <div className="flex flex-col items-center justify-center flex-1 text-muted-foreground">
@@ -79,9 +64,9 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
           ) : (
             cart.items.map((item: any) => (
               <div key={item.id} className="flex gap-4 p-3 border rounded-lg bg-card">
-                <img 
-                  src={item.variant.product?.image || "https://placehold.co/150"} 
-                  alt={item.variant.product?.name} 
+                <img
+                  src={item.variant.product?.image || "https://placehold.co/150"}
+                  alt={item.variant.product?.name}
                   className="w-20 h-24 object-cover rounded-md"
                 />
                 <div className="flex-1 flex flex-col justify-between">
@@ -95,12 +80,12 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
                   </div>
                   <div className="flex items-center justify-between mt-2">
                     <div className="flex items-center border rounded-md">
-                      <button 
+                      <button
                         className="px-2 py-1 text-muted-foreground hover:text-foreground"
                         onClick={() => updateQuantity(item.id, item.quantity - 1)}
                       >-</button>
                       <span className="px-2 text-sm font-medium">{item.quantity}</span>
-                      <button 
+                      <button
                         className="px-2 py-1 text-muted-foreground hover:text-foreground"
                         onClick={() => updateQuantity(item.id, item.quantity + 1)}
                       >+</button>
@@ -121,11 +106,14 @@ export function CartDrawer({ isOpen, onClose }: CartDrawerProps) {
               <span className="font-semibold">Subtotal</span>
               <span className="font-bold text-lg">NRS {cart.subtotal}</span>
             </div>
-            <Link to="/checkout" onClick={onClose} className="block w-full">
-              <Button className="w-full h-12 text-lg font-medium">
-                Proceed to Checkout
-              </Button>
-            </Link>
+            {!user && (
+              <p className="text-sm text-muted-foreground mb-3 text-center">
+                You can checkout as a guest — no account needed.
+              </p>
+            )}
+            <Button className="w-full h-12 text-lg font-medium" onClick={handleCheckout}>
+              Proceed to Checkout
+            </Button>
           </div>
         )}
       </div>

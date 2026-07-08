@@ -525,3 +525,72 @@ ACCEPTANCE CHECKS PASSED:
   - LocMemCache configured for view-level caching.
   - Images load lazily via native browser `loading="lazy"`.
   - SEO meta tags allow indexing and include Open Graph / Twitter Card data.
+
+==============================================================
+PHASE 11 — E-COMMERCE STABILITY & BUG FIXES: COMPLETE
+Date Completed: 2026-07-08
+==============================================================
+
+STEP 11.1 — Duplicate registration fix (BUG 1)
+────────────────────────────────────────────────
+- Files changed:
+  - `accounts/serializers.py`
+- Changes:
+  - Added `validate_email()` to RegisterSerializer to explicitly check and reject duplicate email addresses (400 Bad Request: "An account with this email already exists.").
+  - Removed fallback username loop that appended increments ("name1", "name2"). Now, username is derived from prefix and unique constraints are handled properly (with random hex if taken by a different email).
+  - Conducted database audit: confirmed database holds 5 users and 0 duplicate email groups.
+
+STEP 11.2 — Wishlist wiring (BUG 2)
+────────────────────────────────────
+- Files changed:
+  - `frontend/src/app/context/WishlistContext.tsx` [NEW]
+  - `frontend/src/app/components/ProductCard.tsx`
+  - `frontend/src/app/pages/ProductDetail.tsx`
+  - `frontend/src/app/pages/WishlistPage.tsx`
+  - `frontend/src/app/App.tsx`
+- Changes:
+  - Created global WishlistContext to manage wishlisted items, mapping product IDs to server wishlist item IDs.
+  - Wired ProductCard heart icon: adds item via POST and deletes item via DELETE `/api/wishlist/items/<pk>/`.
+  - Wired ProductDetail page: added Wishlist toggle heart button next to "Add to Cart".
+  - Refactored WishlistPage to consume WishlistContext, maintaining instant sync across all pages.
+
+STEP 11.3 — Cart optimistic toast & credentials fix (BUG 3)
+─────────────────────────────────────────────────────────────
+- Files changed:
+  - `frontend/src/app/context/CartContext.tsx` [NEW]
+  - `frontend/src/app/components/ProductCatalogue.tsx`
+  - `frontend/src/app/components/ProductCard.tsx`
+  - `frontend/src/app/components/CartDrawer.tsx`
+  - `frontend/src/app/pages/ProductDetail.tsx`
+  - `frontend/src/app/components/Header.tsx`
+  - `frontend/src/app/App.tsx`
+- Changes:
+  - Created global CartContext to manage cart state, fetchCart, updateQuantity, and removeItem.
+  - Replaced fake Add to Cart toast in ProductCatalogue (which fired without sending network requests) with a redirect to ProductDetail for variant selection.
+  - Added `credentials: "include"` to all cart fetch calls in CartDrawer, ProductDetail, and Checkout, ensuring the cart_token cookie is correctly stored and transmitted.
+  - Changed Add to Cart success toasts to fire only after a confirmed 200/201 response from the server.
+  - Connected the Header cart count badge to the global CartContext state.
+
+STEP 11.4 — Guest checkout choice screen & cart merge (BUG 4)
+──────────────────────────────────────────────────────────────
+- Files changed:
+  - `orders/views.py`
+  - `orders/urls.py`
+  - `frontend/src/app/pages/Checkout.tsx`
+  - `frontend/src/app/pages/Login.tsx`
+  - `frontend/src/app/pages/Register.tsx`
+- Changes:
+  - Added `CartMergeAPIView` (POST `/api/cart/merge/`) to merge guest cart items into authenticated user accounts on login.
+  - Integrated `mergeGuestCart` inside Login and Register pages.
+  - Added a Checkout option choice screen for unauthenticated users, letting them log in, register, or click "Continue as Guest".
+  - Prepopulated the Checkout contact email field for logged-in users.
+
+STEP 11.5 — Broader Sweep fixes
+───────────────────────────────
+- Files changed:
+  - `accounts/serializers.py`
+  - `accounts/views.py`
+  - `frontend/src/app/context/AuthContext.tsx`
+- Changes:
+  - Serialized user details in custom simplejwt token views (obtain and refresh) to eliminate frontend mock-user fallback (`user@example.com`).
+  - Added first_name and last_name field support to `UserSerializer` and `RegisterSerializer` so names are correctly captured during registration and rendered on the My Account page.

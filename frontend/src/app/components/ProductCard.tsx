@@ -3,11 +3,11 @@ import { Button } from "./ui/button";
 import { Badge } from "./ui/badge";
 import { Card, CardContent } from "./ui/card";
 import { ImageWithFallback } from "./figma/ImageWithFallback";
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Link } from "react-router";
-import { apiFetch } from "../utils/api";
 import { toast } from "sonner";
 import { useCompare } from "../context/CompareContext";
+import { useWishlist } from "../context/WishlistContext";
 
 interface Product {
   id: string;
@@ -25,46 +25,50 @@ interface Product {
 
 interface ProductCardProps {
   product: Product;
+  /** If set, clicking "Add to Cart" calls this directly (e.g. when the parent knows the variant). */
   onAddToCart?: (productId: string) => void;
+  /** @deprecated — remove state is now managed by WishlistContext */
   onWishlistToggle?: (productId: string) => void;
+  /** @deprecated — wishlist state now comes from WishlistContext */
   initiallyWishlisted?: boolean;
 }
 
-export function ProductCard({ product, onAddToCart, onWishlistToggle, initiallyWishlisted = false }: ProductCardProps) {
-  const [isWishlisted, setIsWishlisted] = useState(initiallyWishlisted);
+export function ProductCard({ product, onAddToCart }: ProductCardProps) {
   const [isHovered, setIsHovered] = useState(false);
   const { toggleCompare, isCompared } = useCompare();
+  const { isWishlisted, addToWishlist, removeFromWishlist, getWishlistItemId } = useWishlist();
+
+  const wishlisted = isWishlisted(Number(product.id));
 
   const handleWishlistClick = async (e: React.MouseEvent) => {
-    e.preventDefault(); // prevent triggering Link if wrapper
-    const previousState = isWishlisted;
-    setIsWishlisted(!isWishlisted);
-    
+    e.preventDefault();
     try {
-      if (!previousState) {
-        // Add to wishlist
-        await apiFetch("/api/wishlist/", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ product: product.id })
-        });
+      if (!wishlisted) {
+        await addToWishlist(Number(product.id));
         toast.success("Added to wishlist");
       } else {
-        toast.info("Removed from wishlist (local toggle)");
+        const itemId = getWishlistItemId(Number(product.id));
+        if (itemId !== null) {
+          await removeFromWishlist(itemId);
+          toast.info("Removed from wishlist");
+        }
       }
-      onWishlistToggle?.(product.id);
     } catch (err) {
-      setIsWishlisted(previousState);
       toast.error("Failed to update wishlist");
     }
   };
 
   const handleAddToCart = (e: React.MouseEvent) => {
     e.preventDefault();
-    onAddToCart?.(product.id);
+    if (onAddToCart) {
+      onAddToCart(product.id);
+    } else {
+      // No variant context available from catalogue view — navigate to product detail for variant selection
+      window.location.href = `/product/${product.slug || product.id}`;
+    }
   };
   
-  const handleCompareChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleCompareChange = (_e: React.ChangeEvent<HTMLInputElement>) => {
     toggleCompare(product);
   };
 
@@ -115,14 +119,14 @@ export function ProductCard({ product, onAddToCart, onWishlistToggle, initiallyW
             variant="ghost"
             size="sm"
             className={`absolute top-2 right-2 h-8 w-8 p-0 transition-all duration-200 z-10 ${
-              isWishlisted 
+              wishlisted 
                 ? 'bg-red-500 text-white hover:bg-red-600' 
                 : 'bg-background/80 hover:bg-background'
             }`}
             onClick={handleWishlistClick}
           >
             <Heart 
-              className={`h-4 w-4 ${isWishlisted ? 'fill-current' : ''}`} 
+              className={`h-4 w-4 ${wishlisted ? 'fill-current' : ''}`} 
             />
           </Button>
 

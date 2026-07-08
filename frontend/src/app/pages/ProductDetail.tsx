@@ -3,17 +3,22 @@ import { useParams } from "react-router";
 import { Button } from "../components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
 import { toast } from "sonner";
-import { Star } from "lucide-react";
+import { Star, Heart } from "lucide-react";
 import { apiFetch } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 import { ProductCarousel } from "../components/ProductCarousel";
+import { API_BASE_URL } from "@/config";
+import { useCart } from "../context/CartContext";
+import { useWishlist } from "../context/WishlistContext";
 
 export function ProductDetail() {
   const { slug } = useParams();
   const { user } = useAuth();
+  const { addToCart } = useCart();
+  const { isWishlisted, addToWishlist, removeFromWishlist, getWishlistItemId } = useWishlist();
   const [product, setProduct] = useState<any>(null);
   const [loading, setLoading] = useState(true);
-  
+
   // Selection State
   const [selectedSize, setSelectedSize] = useState<string | null>(null);
   const [selectedColor, setSelectedColor] = useState<string | null>(null);
@@ -21,7 +26,7 @@ export function ProductDetail() {
   const [activeImage, setActiveImage] = useState<string>("");
 
   useEffect(() => {
-    fetch(`http://127.0.0.1:8000/api/products/${slug}/`)
+    fetch(`${API_BASE_URL}/api/products/${slug}/`)
       .then((res) => res.json())
       .then((data) => {
         setProduct(data);
@@ -37,7 +42,7 @@ export function ProductDetail() {
           method: "POST",
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ product: data.id })
-        }).catch(() => {}); // silently ignore errors
+        }).catch(() => { }); // silently ignore errors
       });
   }, [slug]);
 
@@ -54,7 +59,7 @@ export function ProductDetail() {
             }
           }
         })
-        .catch(() => {});
+        .catch(() => { });
     }
   }, [product, user]);
 
@@ -64,7 +69,7 @@ export function ProductDetail() {
   // Derive unique sizes and colors for UI
   const availableSizes = Array.from(new Set(product.variants?.map((v: any) => v.size).filter(Boolean)));
   const availableColors = Array.from(new Set(product.variants?.map((v: any) => v.color).filter(Boolean)));
-  
+
   // Find currently selected variant based on UI selection
   const selectedVariant = product.variants?.find(
     (v: any) => v.size === selectedSize && v.color === selectedColor
@@ -75,18 +80,27 @@ export function ProductDetail() {
       toast.error("Please select all options");
       return;
     }
-    fetch('http://127.0.0.1:8000/api/cart/items/', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ variantId: selectedVariant.id, quantity })
-    })
-    .then((res) => {
-      if(res.ok) {
-        toast.success("Added to cart");
+    // Context addToCart handles API request, credentials, local state update, and success toast
+    addToCart(selectedVariant.id, quantity);
+  };
+
+  const wishlisted = isWishlisted(Number(product.id));
+
+  const handleWishlistToggle = async () => {
+    try {
+      if (!wishlisted) {
+        await addToWishlist(Number(product.id));
+        toast.success("Added to wishlist");
       } else {
-        toast.error("Failed to add to cart");
+        const itemId = getWishlistItemId(Number(product.id));
+        if (itemId !== null) {
+          await removeFromWishlist(itemId);
+          toast.info("Removed from wishlist");
+        }
       }
-    });
+    } catch (err) {
+      toast.error("Failed to update wishlist");
+    }
   };
 
   const images = [product.image, ...(product.images?.map((i: any) => i.image_url) || [])];
@@ -94,15 +108,15 @@ export function ProductDetail() {
   return (
     <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
       <div className="grid md:grid-cols-2 gap-10">
-        
+
         {/* Image Gallery */}
         <div className="flex flex-col-reverse md:flex-row gap-4">
           <div className="flex md:flex-col gap-2 overflow-x-auto md:w-24 shrink-0">
             {images.map((img: string, idx: number) => (
-              <img 
-                key={idx} 
-                src={img} 
-                alt="Thumbnail" 
+              <img
+                key={idx}
+                src={img}
+                alt="Thumbnail"
                 className={`w-20 h-24 md:w-full md:h-32 object-cover rounded-md cursor-pointer border-2 transition-all ${activeImage === img ? 'border-primary' : 'border-transparent opacity-70 hover:opacity-100'}`}
                 onClick={() => setActiveImage(img)}
               />
@@ -132,7 +146,7 @@ export function ProductDetail() {
               <h3 className="font-semibold mb-3">Color: <span className="font-normal text-muted-foreground">{selectedColor}</span></h3>
               <div className="flex flex-wrap gap-2">
                 {availableColors.map((color: any) => (
-                  <button 
+                  <button
                     key={color}
                     className={`px-4 py-2 border rounded-md transition-all ${selectedColor === color ? 'border-primary bg-primary/5 font-medium' : 'hover:border-gray-400'}`}
                     onClick={() => setSelectedColor(color)}
@@ -149,7 +163,7 @@ export function ProductDetail() {
               <h3 className="font-semibold mb-3">Size: <span className="font-normal text-muted-foreground">{selectedSize}</span></h3>
               <div className="flex flex-wrap gap-2">
                 {availableSizes.map((size: any) => (
-                  <button 
+                  <button
                     key={size}
                     className={`px-4 py-2 border rounded-md transition-all ${selectedSize === size ? 'border-primary bg-primary/5 font-medium' : 'hover:border-gray-400'}`}
                     onClick={() => setSelectedSize(size)}
@@ -170,6 +184,19 @@ export function ProductDetail() {
             </div>
             <Button className="flex-1 h-12 text-lg" onClick={handleAddToCart}>
               Add to Cart
+            </Button>
+            <Button
+              variant="outline"
+              size="icon"
+              className={`h-12 w-12 p-0 border transition-all ${
+                wishlisted 
+                  ? 'bg-red-500 text-white border-red-500 hover:bg-red-600' 
+                  : 'hover:bg-accent'
+              }`}
+              onClick={handleWishlistToggle}
+              title={wishlisted ? "Remove from Wishlist" : "Add to Wishlist"}
+            >
+              <Heart className={`h-5 w-5 ${wishlisted ? 'fill-current' : ''}`} />
             </Button>
           </div>
           {selectedVariant && selectedVariant.stock_quantity <= 5 && (

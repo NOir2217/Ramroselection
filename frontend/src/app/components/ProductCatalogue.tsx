@@ -64,7 +64,6 @@ export function ProductCatalogue() {
     };
   }, [searchParams]);
 
-  // Frontend Sort & basic filters
   const filteredAndSortedProducts = useMemo(() => {
     let result = [...products];
 
@@ -92,14 +91,6 @@ export function ProductCatalogue() {
 
     return result;
   }, [products, sortBy]);
-
-  const handleAddToCart = (productId: string) => {
-    toast.success("Product added to cart!");
-  };
-
-  const handleWishlistToggle = (productId: string) => {
-    toast.success("Wishlist updated!");
-  };
 
   if (loading) {
     return (
@@ -195,8 +186,6 @@ export function ProductCatalogue() {
                 <ProductCard
                   key={product.id}
                   product={product}
-                  onAddToCart={handleAddToCart}
-                  onWishlistToggle={handleWishlistToggle}
                 />
               ))}
             </div>
