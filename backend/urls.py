@@ -29,7 +29,7 @@ urlpatterns = [
     path('api/', include('orders.urls')),
     path('', views.home, name='home'),
     path('api/', include('engagement.urls')),
-] ] + [
+] + [
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
     re_path(r'^(?!api/|rs-admin-panel/|media/).*$', views.home, name='spa-catchall'),
 ]
