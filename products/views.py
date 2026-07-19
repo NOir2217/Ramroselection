@@ -2,14 +2,16 @@ from django.shortcuts import get_object_or_404
 from django.http import JsonResponse
 from rest_framework import generics
 from rest_framework.permissions import AllowAny
-from .models import Product, Collection
+from .models import Product, Collection, ProductImage, ProductVariant
 from .serializers import ProductSerializer
 from django.db.models import Q, Count
 from django.views.decorators.cache import cache_page
 from django.utils.decorators import method_decorator
 
 class ProductDetailAPIView(generics.RetrieveAPIView):
-    queryset = Product.objects.select_related('category').all()
+    queryset = Product.objects.select_related('category').prefetch_related(
+        'variants', 'product_images', 'reviews__customer__user',
+    )
     serializer_class = ProductSerializer
     lookup_field = 'slug'
     permission_classes = [AllowAny]
@@ -27,7 +29,18 @@ class ProductListAPIView(generics.ListAPIView):
     pagination_class = ProductPagination
 
     def get_queryset(self):
-        qs = Product.objects.select_related('category').all()
+        from django.db.models import Prefetch
+        from engagement.models import Review
+
+        qs = Product.objects.select_related('category').prefetch_related(
+            'variants',
+            'product_images',
+            Prefetch(
+                'reviews',
+                queryset=Review.objects.filter(is_approved=True).order_by('-created_at'),
+                to_attr='approved_reviews',
+            ),
+        )
         params = self.request.GET
 
         q = params.get('q')
@@ -62,19 +75,37 @@ class ProductListAPIView(generics.ListAPIView):
         if color:
             qs = qs.filter(variants__color__iexact=color, variants__stock_quantity__gt=0).distinct()
 
+        material = params.get('material')
+        if material:
+            qs = qs.filter(material__iexact=material)
+
+        closure_type = params.get('closure_type')
+        if closure_type:
+            qs = qs.filter(closure_type__iexact=closure_type)
+
         return qs
 
 def _serialize_product(p):
+    img_val = ""
+    if p.image:
+        img_str = str(p.image)
+        if img_str.startswith('http://') or img_str.startswith('https://'):
+            img_val = img_str
+        else:
+            from django.conf import settings
+            img_val = settings.MEDIA_URL + img_str
+
     item = {
         'id': str(p.id),
         'name': p.name,
         'price': float(p.price),
         'rating': float(p.rating),
         'reviewCount': p.review_count,
-        'image': p.image,
+        'image': img_val,
         'category': p.category.name if p.category else '',
         'slug': p.slug,
     }
+
     if p.original_price is not None:
         item['originalPrice'] = float(p.original_price)
     if p.is_new:
@@ -90,7 +121,7 @@ def api_search_products(request):
     if len(q) < 2:
         return JsonResponse([], safe=False)
         
-    products = Product.objects.filter(
+    products = Product.objects.select_related('category').filter(
         Q(name__icontains=q) | 
         Q(brand__icontains=q) | 
         Q(category__name__icontains=q)
@@ -104,6 +135,7 @@ from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework.permissions import AllowAny as DRFAllowAny
 from rest_framework import status
+from rest_framework.parsers import MultiPartParser, FormParser
 
 class ProductRecommendationsAPIView(APIView):
     permission_classes = [DRFAllowAny]
@@ -153,8 +185,13 @@ class AdminProductListAPIView(APIView):
     def get(self, request):
         search = request.GET.get('search', '')
         products = Product.objects.select_related('category').annotate(
-            variant_count=Count('variants'),
-            image_count=Count('product_images'),
+            variant_count=Count('variants', distinct=True),
+            image_count=Count('product_images', distinct=True),
+            low_stock_count=Count(
+                'variants',
+                filter=Q(variants__stock_quantity__lte=5),
+                distinct=True,
+            ),
         ).order_by('name')
 
         if search:
@@ -166,7 +203,6 @@ class AdminProductListAPIView(APIView):
 
         data = []
         for p in products:
-            low_stock = p.variants.filter(stock_quantity__lte=5).count()
             data.append({
                 'id': p.id,
                 'name': p.name,
@@ -178,7 +214,7 @@ class AdminProductListAPIView(APIView):
                 'category': p.category.name if p.category else '',
                 'variantCount': p.variant_count,
                 'imageCount': p.image_count,
-                'lowStockVariants': low_stock,
+                'lowStockVariants': p.low_stock_count,
             })
 
         return Response(data)
@@ -246,23 +282,47 @@ class AdminBulkVariantCreateAPIView(APIView):
 
 class AdminBulkImageUploadAPIView(APIView):
     permission_classes = [IsAdminUser]
+    parser_classes = [MultiPartParser, FormParser]
 
     def post(self, request, product_id):
         product = get_object_or_404(Product, id=product_id)
-        images_data = request.data.get('images', [])
+        
+        files = request.FILES.getlist('images')
+        
+        if not files:
+            return Response({"detail": "No images provided."}, status=status.HTTP_400_BAD_REQUEST)
 
         created = []
-        for img_data in images_data:
-            img_data['product'] = product.id
+        errors = []
+        
+        for file_obj in files:
+            img_data = {
+                'image_url': file_obj,
+                'image_type': request.data.get('image_type', 'angle'),
+                'display_order': request.data.get('display_order', 0),
+            }
+            variant_id = request.data.get('variant')
+            if variant_id:
+                img_data['variant'] = variant_id
+                
             serializer = ProductImageSerializer(data=img_data)
             if serializer.is_valid():
-                serializer.save()
+                serializer.save(product=product)
                 created.append(serializer.data)
+            else:
+                errors.append({
+                    'file': file_obj.name,
+                    'errors': serializer.errors
+                })
 
+        response_status = status.HTTP_201_CREATED if not errors else status.HTTP_400_BAD_REQUEST
+        
         return Response({
             'created': created,
+            'errors': errors,
             'createdCount': len(created),
-        }, status=status.HTTP_201_CREATED)
+            'failedCount': len(errors),
+        }, status=response_status)
 
     def patch(self, request, product_id):
         product = get_object_or_404(Product, id=product_id)
@@ -279,7 +339,7 @@ class AdminReviewModerationAPIView(APIView):
 
     def get(self, request, pk=None):
         from engagement.models import Review
-        pending = Review.objects.filter(is_approved=False).select_related('product', 'customer').order_by('-created_at')
+        pending = Review.objects.filter(is_approved=False).select_related('product', 'customer__user').order_by('-created_at')
 
         data = []
         for r in pending:
@@ -312,7 +372,9 @@ class AdminCollectionListAPIView(APIView):
 
     def get(self, request):
         search = request.GET.get('search', '')
-        collections = Collection.objects.all().order_by('display_order', 'name')
+        collections = Collection.objects.annotate(
+            product_count=Count('products'),
+        ).order_by('display_order', 'name')
 
         if search:
             collections = collections.filter(
@@ -331,7 +393,7 @@ class AdminCollectionListAPIView(APIView):
                 'bannerImageUrl': c.banner_image_url,
                 'isActive': c.is_active,
                 'displayOrder': c.display_order,
-                'productCount': c.products.count(),
+                'productCount': c.product_count,
             })
         return Response(data)
 

@@ -14,6 +14,18 @@ class ProductImageSerializer(serializers.ModelSerializer):
         fields = '__all__'
         read_only_fields = ('product',)
 
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        if instance.image_url:
+            val = str(instance.image_url)
+            if not (val.startswith('http://') or val.startswith('https://')):
+                request = self.context.get('request')
+                if request:
+                    rep['image_url'] = request.build_absolute_uri(instance.image_url.url)
+                else:
+                    rep['image_url'] = instance.image_url.url
+        return rep
+
 class SizeGuideSerializer(serializers.ModelSerializer):
     categoryName = serializers.CharField(source='category.name', read_only=True)
     
@@ -44,9 +56,26 @@ class ProductSerializer(serializers.ModelSerializer):
         model = Product
         fields = '__all__'
 
+    def to_representation(self, instance):
+        rep = super().to_representation(instance)
+        if instance.image:
+            val = str(instance.image)
+            if not (val.startswith('http://') or val.startswith('https://')):
+                request = self.context.get('request')
+                if request:
+                    rep['image'] = request.build_absolute_uri(instance.image.url)
+                else:
+                    rep['image'] = instance.image.url
+        return rep
+
+
     def get_reviews(self, obj):
-        # Only return approved reviews for the public API
-        approved_reviews = obj.reviews.filter(is_approved=True).order_by('-created_at')
+        # Use prefetched approved_reviews if available (from list views),
+        # otherwise fall back to a DB query (detail views).
+        if hasattr(obj, 'approved_reviews'):
+            approved_reviews = obj.approved_reviews
+        else:
+            approved_reviews = obj.reviews.filter(is_approved=True).order_by('-created_at')
         return ReviewSerializer(approved_reviews, many=True).data
 
     def get_sizeGuide(self, obj):

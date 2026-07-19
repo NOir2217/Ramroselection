@@ -1,4 +1,5 @@
 from django.urls import path
+from django_ratelimit.decorators import ratelimit
 from .views import (
     ProductDetailAPIView, ProductListAPIView, api_search_products, ProductRecommendationsAPIView,
     AdminProductListAPIView, AdminVariantAPIView, AdminBulkVariantCreateAPIView,
@@ -8,7 +9,7 @@ from .views import (
 
 urlpatterns = [
     path('', ProductListAPIView.as_view(), name='api-products-list'),
-    path('search/', api_search_products, name='api-products-search'),
+    path('search/', ratelimit(key='ip', rate='30/m', block=True)(api_search_products), name='api-products-search'),
     path('<slug:slug>/recommendations/', ProductRecommendationsAPIView.as_view(), name='api-product-recommendations'),
     path('<slug:slug>/', ProductDetailAPIView.as_view(), name='api-product-detail'),
 

@@ -1,4 +1,11 @@
 from django.db import models
+from django.core.exceptions import ValidationError
+
+def validate_image_size(file):
+    max_size_kb = 5120  # 5MB
+    if file and hasattr(file, 'size') and file.size > max_size_kb * 1024:
+        raise ValidationError(f"Max file size is {max_size_kb // 1024}MB.")
+
 
 class Category(models.Model):
     name = models.CharField(max_length=255)
@@ -16,6 +23,7 @@ class Category(models.Model):
 class Product(models.Model):
     PRODUCT_TYPE_CHOICES = [
         ('clothing', 'Clothing'),
+        ('bags', 'Bags'),
         ('cosmetics', 'Cosmetics'),
         ('other', 'Other'),
     ]
@@ -25,7 +33,7 @@ class Product(models.Model):
     original_price = models.DecimalField(max_digits=10, decimal_places=2, null=True, blank=True)
     rating = models.DecimalField(max_digits=3, decimal_places=2, default=0.0, db_index=True)
     review_count = models.IntegerField(default=0)
-    image = models.URLField(max_length=500)
+    image = models.ImageField(upload_to='products/primary/', max_length=500, null=True, blank=True, validators=[validate_image_size])
     category = models.ForeignKey(Category, on_delete=models.SET_NULL, null=True, blank=True, related_name='products', db_index=True)
     is_new = models.BooleanField(default=False, db_index=True)
     is_sale = models.BooleanField(default=False, db_index=True)
@@ -43,6 +51,11 @@ class Product(models.Model):
     fit = models.CharField(max_length=50, null=True, blank=True) # e.g. slim/oversized/regular
     skin_type = models.CharField(max_length=50, null=True, blank=True, db_index=True) # oily/dry/sensitive/combination
     finish = models.CharField(max_length=50, null=True, blank=True, db_index=True) # matte/dewy/glossy
+    
+    # Bag attributes (Task 2)
+    closure_type = models.CharField(max_length=100, null=True, blank=True)
+    material = models.CharField(max_length=100, null=True, blank=True)
+
     sku = models.CharField(max_length=100, unique=True)
     slug = models.SlugField(max_length=255, unique=True)
     related_products = models.ManyToManyField('self', blank=True, symmetrical=True)
@@ -90,7 +103,7 @@ class ProductImage(models.Model):
 
     product = models.ForeignKey(Product, on_delete=models.CASCADE, related_name='product_images')
     variant = models.ForeignKey(ProductVariant, on_delete=models.SET_NULL, null=True, blank=True, related_name='images')
-    image_url = models.URLField(max_length=500)
+    image_url = models.ImageField(upload_to='products/gallery/', max_length=500, null=True, blank=True, validators=[validate_image_size])
     image_type = models.CharField(max_length=20, choices=IMAGE_TYPE_CHOICES, default='angle')
     display_order = models.IntegerField(default=0)
 

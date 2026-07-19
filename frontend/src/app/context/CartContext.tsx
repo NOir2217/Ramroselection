@@ -1,5 +1,4 @@
 import { createContext, useContext, useState, useCallback, useEffect, ReactNode } from "react";
-import { API_BASE_URL } from "@/config";
 import { apiFetch } from "../utils/api";
 import { toast } from "sonner";
 
@@ -46,9 +45,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const fetchCart = useCallback(async () => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/cart/`, {
-        credentials: "include",
-      });
+      const res = await apiFetch("/api/cart/");
       if (res.ok) {
         const data = await res.json();
         setCart(data);
@@ -66,10 +63,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const addToCart = useCallback(async (variantId: number, quantity = 1): Promise<boolean> => {
     setIsLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/cart/items/`, {
+      const res = await apiFetch("/api/cart/items/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ variantId, quantity }),
       });
 
@@ -94,10 +90,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const updateQuantity = useCallback(async (itemId: number, newQuantity: number) => {
     if (newQuantity < 1) return;
     try {
-      const res = await fetch(`${API_BASE_URL}/api/cart/items/${itemId}/`, {
+      const res = await apiFetch(`/api/cart/items/${itemId}/`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        credentials: "include",
         body: JSON.stringify({ quantity: newQuantity }),
       });
       if (res.ok) {
@@ -111,9 +106,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const removeItem = useCallback(async (itemId: number) => {
     try {
-      const res = await fetch(`${API_BASE_URL}/api/cart/items/${itemId}/`, {
+      const res = await apiFetch(`/api/cart/items/${itemId}/`, {
         method: "DELETE",
-        credentials: "include",
       });
       if (res.ok) {
         const data = await res.json();

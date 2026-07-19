@@ -34,6 +34,10 @@ class CartAPIView(APIView):
 
     def get(self, request):
         cart = self.get_cart(request)
+        # Prefetch items→variant→product to avoid N+1 in serializer
+        cart = Cart.objects.prefetch_related(
+            'items__variant__product',
+        ).get(pk=cart.pk)
         serializer = CartSerializer(cart)
         response = Response(serializer.data)
         if not request.user.is_authenticated:
@@ -126,6 +130,7 @@ class CartItemDetailAPIView(APIView):
 from django.db import transaction
 from .models import Order, OrderItem
 from accounts.models import Address, CustomerProfile
+from accounts.serializers import AddressSerializer
 
 class CheckoutAPIView(APIView):
     permission_classes = [AllowAny]
@@ -155,6 +160,69 @@ class CheckoutAPIView(APIView):
         if not request.user.is_authenticated and not guest_email:
             return Response({"detail": "Email is required for guest checkout."}, status=status.HTTP_400_BAD_REQUEST)
 
+        shipping_address_id = request.data.get('shipping_address_id')
+        shipping_info = request.data.get('shipping_info')
+        
+        shipping_address = None
+        
+        if shipping_address_id:
+            if request.user.is_authenticated:
+                try:
+                    shipping_address = Address.objects.get(id=shipping_address_id, profile=request.user.customerprofile)
+                except Address.DoesNotExist:
+                    return Response({"detail": "Invalid shipping address ID."}, status=status.HTTP_400_BAD_REQUEST)
+            else:
+                guest_addresses = request.session.get('guest_addresses', [])
+                guest_addr_dict = None
+                for addr in guest_addresses:
+                    if addr.get('id') == shipping_address_id:
+                        guest_addr_dict = addr
+                        break
+                if not guest_addr_dict:
+                    return Response({"detail": "Invalid shipping address ID."}, status=status.HTTP_400_BAD_REQUEST)
+                shipping_address = Address.objects.create(
+                    profile=None,
+                    full_name=guest_addr_dict.get('full_name', ''),
+                    phone=guest_addr_dict.get('phone', ''),
+                    street=guest_addr_dict.get('street', ''),
+                    city=guest_addr_dict.get('city', ''),
+                    postal_code=guest_addr_dict.get('postal_code', ''),
+                    country=guest_addr_dict.get('country', 'Nepal')
+                )
+        elif shipping_info:
+            first_name = shipping_info.get('firstName', '')
+            last_name = shipping_info.get('lastName', '')
+            full_name = shipping_info.get('fullName', f"{first_name} {last_name}".strip())
+            
+            addr_data = {
+                'full_name': full_name,
+                'phone': shipping_info.get('phone', ''),
+                'street': shipping_info.get('address', shipping_info.get('street', '')),
+                'city': shipping_info.get('city', ''),
+                'postal_code': shipping_info.get('postalCode', shipping_info.get('postal_code', '')),
+                'country': shipping_info.get('country', 'Nepal'),
+            }
+            
+            serializer = AddressSerializer(data=addr_data)
+            serializer.is_valid(raise_exception=True)
+            
+            if request.user.is_authenticated:
+                profile = request.user.customerprofile
+                existing = Address.objects.filter(
+                    profile=profile,
+                    full_name=addr_data['full_name'],
+                    street=addr_data['street'],
+                    city=addr_data['city']
+                ).first()
+                if existing:
+                    shipping_address = existing
+                else:
+                    shipping_address = serializer.save(profile=profile)
+            else:
+                shipping_address = serializer.save(profile=None)
+        else:
+            return Response({"detail": "Shipping address is required."}, status=status.HTTP_400_BAD_REQUEST)
+
         # Sort items by variant id to lock them in a deterministic order and prevent deadlocks
         items_sorted = sorted(cart.items.all(), key=lambda x: x.variant.id)
         
@@ -179,6 +247,7 @@ class CheckoutAPIView(APIView):
             customer=request.user.customerprofile if request.user.is_authenticated else None,
             guest_email=guest_email if not request.user.is_authenticated else None,
             status='pending_payment',
+            shipping_address=shipping_address,
             subtotal=subtotal,
             shipping_fee=shipping_fee,
             total=total,
@@ -260,9 +329,11 @@ class OrderListAPIView(APIView):
     permission_classes = [IsAuthenticated]
     
     def get(self, request):
-        if not request.user.is_authenticated:
-            return Response({"detail": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
-        orders = Order.objects.filter(customer=request.user.customerprofile).order_by('-created_at')
+        orders = Order.objects.filter(
+            customer=request.user.customerprofile
+        ).prefetch_related(
+            'items__variant__product', 'items__return_requests',
+        ).order_by('-created_at')
         serializer = OrderSerializer(orders, many=True)
         return Response(serializer.data)
 
@@ -270,7 +341,12 @@ class OrderRetrieveAPIView(APIView):
     permission_classes = [AllowAny]
     
     def get(self, request, order_number):
-        order = get_object_or_404(Order, order_number=order_number)
+        order = get_object_or_404(
+            Order.objects.prefetch_related(
+                'items__variant__product', 'items__return_requests',
+            ),
+            order_number=order_number,
+        )
         
         # Verify access
         if order.customer:
@@ -289,9 +365,6 @@ class OrderReturnAPIView(APIView):
     permission_classes = [IsAuthenticated]
     
     def post(self, request, item_id):
-        if not request.user.is_authenticated:
-            return Response({"detail": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
-            
         reason = request.data.get('reason')
         if not reason:
             return Response({"error": "Reason required"}, status=status.HTTP_400_BAD_REQUEST)
@@ -366,7 +439,11 @@ class AdminOrderListAPIView(APIView):
         status_filter = request.GET.get('status')
         search = request.GET.get('search', '')
 
-        orders = Order.objects.select_related('customer', 'customer__user').order_by('-created_at')
+        orders = Order.objects.select_related(
+            'customer', 'customer__user',
+        ).prefetch_related(
+            'items__variant__product', 'items__return_requests',
+        ).order_by('-created_at')
 
         if status_filter:
             orders = orders.filter(status=status_filter)
@@ -416,7 +493,10 @@ class AdminLowStockAPIView(APIView):
         from products.models import ProductVariant
         from products.serializers import ProductVariantSerializer
 
-        threshold = int(request.GET.get('threshold', 5))
+        try:
+            threshold = int(request.GET.get('threshold', 5))
+        except (ValueError, TypeError):
+            threshold = 5
         variants = ProductVariant.objects.filter(
             stock_quantity__lte=threshold,
             stock_quantity__gte=0,
@@ -447,7 +527,10 @@ class AdminExpiringProductsAPIView(APIView):
     def get(self, request):
         from products.models import ProductVariant
 
-        days = int(request.GET.get('days', 30))
+        try:
+            days = int(request.GET.get('days', 30))
+        except (ValueError, TypeError):
+            days = 30
         cutoff = timezone.now().date() + timedelta(days=days)
 
         variants = ProductVariant.objects.filter(
@@ -518,11 +601,17 @@ class AdminAbandonedCartsAPIView(APIView):
     permission_classes = [IsAdminUser]
 
     def get(self, request):
-        days_ago = timezone.now() - timedelta(days=int(request.GET.get('days', 3)))
+        try:
+            days = int(request.GET.get('days', 3))
+        except (ValueError, TypeError):
+            days = 3
+        days_ago = timezone.now() - timedelta(days=days)
 
         carts = Cart.objects.filter(
             updated_at__lte=days_ago,
             items__isnull=False,
+        ).select_related(
+            'customer', 'customer__user'
         ).annotate(
             item_count=Count('items'),
             cart_total=Sum(

@@ -23,6 +23,7 @@ class CartSerializer(serializers.ModelSerializer):
         fields = ('id', 'items', 'subtotal', 'created_at', 'updated_at')
 
     def get_subtotal(self, obj):
+        # Use .all() which hits the prefetch cache when available
         return sum(
             item.quantity * (item.variant.product.price + item.variant.extra_price)
             for item in obj.items.all()

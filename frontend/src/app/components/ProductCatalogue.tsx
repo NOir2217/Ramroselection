@@ -7,6 +7,7 @@ import { Filter, Grid, List } from "lucide-react";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 import { toast } from "sonner";
 import { useSearchParams } from "react-router";
+import { apiFetch } from "../utils/api";
 
 interface Product {
   id: string;
@@ -39,7 +40,7 @@ export function ProductCatalogue() {
     // Construct API query string from URL search params
     const query = new URLSearchParams(searchParams.toString());
     
-    fetch(`/api/products/?${query.toString()}`)
+    apiFetch(`/api/products/?${query.toString()}`)
       .then((res) => {
         if (!res.ok) {
           throw new Error("Failed to fetch products");

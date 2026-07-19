@@ -1,4 +1,5 @@
 from django.conf import settings
+from django.db import transaction
 from rest_framework import status
 from rest_framework.response import Response
 from rest_framework.views import APIView
@@ -6,7 +7,9 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from rest_framework_simplejwt.tokens import RefreshToken
 from rest_framework_simplejwt.exceptions import InvalidToken, TokenError
-from .serializers import RegisterSerializer, UserSerializer
+from .serializers import RegisterSerializer, UserSerializer, AddressSerializer, CustomerProfileSerializer
+from .models import Address
+from django.contrib.auth.models import User
 
 def set_jwt_cookies(response, refresh_token):
     """Helper to set refresh token in an HttpOnly cookie."""
@@ -134,37 +137,151 @@ class RegisterView(APIView):
 
 
 class ProfilePreferencesView(APIView):
+    """
+    GET  /api/auth/preferences/ → returns default_size, skin_type, phone
+    PATCH /api/auth/preferences/ → updates default_size, skin_type, phone
+    """
     permission_classes = [IsAuthenticated]
-    """
-    GET  /api/auth/preferences/ → returns default_size, skin_type
-    PATCH /api/auth/preferences/ → updates default_size, skin_type
-    """
 
     def get(self, request):
-        if not request.user.is_authenticated:
-            return Response({"detail": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
-
         profile = request.user.customerprofile
-        return Response({
-            "default_size": profile.default_size,
-            "skin_type": profile.skin_type,
-            "phone": profile.phone,
-        })
+        serializer = CustomerProfileSerializer(profile)
+        return Response(serializer.data)
 
+    @transaction.atomic
     def patch(self, request):
-        if not request.user.is_authenticated:
-            return Response({"detail": "Authentication required"}, status=status.HTTP_401_UNAUTHORIZED)
-
         profile = request.user.customerprofile
-        allowed_fields = ['default_size', 'skin_type', 'phone']
+        serializer = CustomerProfileSerializer(
+            profile, data=request.data, partial=True
+        )
+        serializer.is_valid(raise_exception=True)
+        serializer.save()
+        return Response(serializer.data)
 
-        for field in allowed_fields:
-            if field in request.data:
-                setattr(profile, field, request.data[field])
+class AddressListCreateAPIView(APIView):
+    permission_classes = [AllowAny]
 
-        profile.save()
-        return Response({
-            "default_size": profile.default_size,
-            "skin_type": profile.skin_type,
-            "phone": profile.phone,
-        })
+    def get(self, request):
+        if request.user.is_authenticated:
+            profile = request.user.customerprofile
+            addresses = Address.objects.filter(profile=profile).order_by('-is_default', 'id')
+            serializer = AddressSerializer(addresses, many=True)
+            return Response(serializer.data)
+        else:
+            guest_addresses = request.session.get('guest_addresses', [])
+            return Response(guest_addresses)
+
+    def post(self, request):
+        serializer = AddressSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+        
+        is_default = serializer.validated_data.get('is_default', False)
+        
+        if request.user.is_authenticated:
+            profile = request.user.customerprofile
+            if is_default:
+                Address.objects.filter(profile=profile).update(is_default=False)
+            address = serializer.save(profile=profile)
+            return Response(AddressSerializer(address).data, status=status.HTTP_201_CREATED)
+        else:
+            guest_addresses = request.session.get('guest_addresses', [])
+            new_id = max([addr.get('id', 0) for addr in guest_addresses] + [0]) + 1
+            
+            new_address = {
+                'id': new_id,
+                'full_name': serializer.validated_data.get('full_name'),
+                'phone': serializer.validated_data.get('phone'),
+                'street': serializer.validated_data.get('street'),
+                'city': serializer.validated_data.get('city'),
+                'postal_code': serializer.validated_data.get('postal_code'),
+                'country': serializer.validated_data.get('country'),
+                'is_default': is_default
+            }
+            
+            if is_default:
+                for addr in guest_addresses:
+                    addr['is_default'] = False
+                    
+            guest_addresses.append(new_address)
+            request.session['guest_addresses'] = guest_addresses
+            request.session.modified = True
+            return Response(new_address, status=status.HTTP_201_CREATED)
+
+class AddressDetailAPIView(APIView):
+    permission_classes = [AllowAny]
+
+    def get_address_or_404(self, request, pk):
+        if request.user.is_authenticated:
+            profile = request.user.customerprofile
+            try:
+                return Address.objects.get(pk=pk, profile=profile)
+            except Address.DoesNotExist:
+                return None
+        else:
+            guest_addresses = request.session.get('guest_addresses', [])
+            for addr in guest_addresses:
+                if addr.get('id') == pk:
+                    return addr
+            return None
+
+    def get(self, request, pk):
+        addr = self.get_address_or_404(request, pk)
+        if addr is None:
+            return Response({"detail": "Address not found."}, status=status.HTTP_404_NOT_FOUND)
+        if request.user.is_authenticated:
+            return Response(AddressSerializer(addr).data)
+        return Response(addr)
+
+    def patch(self, request, pk):
+        addr = self.get_address_or_404(request, pk)
+        if addr is None:
+            return Response({"detail": "Address not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        if request.user.is_authenticated:
+            serializer = AddressSerializer(addr, data=request.data, partial=True)
+            serializer.is_valid(raise_exception=True)
+            is_default = serializer.validated_data.get('is_default', False)
+            if is_default:
+                Address.objects.filter(profile=request.user.customerprofile).exclude(pk=pk).update(is_default=False)
+            updated_addr = serializer.save()
+            return Response(AddressSerializer(updated_addr).data)
+        else:
+            guest_addresses = request.session.get('guest_addresses', [])
+            for idx, item in enumerate(guest_addresses):
+                if item.get('id') == pk:
+                    serializer = AddressSerializer(data=request.data, partial=True)
+                    serializer.is_valid(raise_exception=True)
+                    
+                    for field in ['full_name', 'phone', 'street', 'city', 'postal_code', 'country', 'is_default']:
+                        if field in serializer.validated_data:
+                            item[field] = serializer.validated_data[field]
+                            
+                    is_default = item.get('is_default', False)
+                    if is_default:
+                        for other in guest_addresses:
+                            if other.get('id') != pk:
+                                other['is_default'] = False
+                                
+                    request.session['guest_addresses'] = guest_addresses
+                    request.session.modified = True
+                    return Response(item)
+            return Response({"detail": "Address not found."}, status=status.HTTP_404_NOT_FOUND)
+
+    def delete(self, request, pk):
+        if request.user.is_authenticated:
+            profile = request.user.customerprofile
+            try:
+                addr = Address.objects.get(pk=pk, profile=profile)
+                addr.delete()
+                return Response(status=status.HTTP_204_NO_CONTENT)
+            except Address.DoesNotExist:
+                return Response({"detail": "Address not found."}, status=status.HTTP_404_NOT_FOUND)
+        else:
+            guest_addresses = request.session.get('guest_addresses', [])
+            filtered_addresses = [addr for addr in guest_addresses if addr.get('id') != pk]
+            if len(filtered_addresses) == len(guest_addresses):
+                return Response({"detail": "Address not found."}, status=status.HTTP_404_NOT_FOUND)
+            request.session['guest_addresses'] = filtered_addresses
+            request.session.modified = True
+            return Response(status=status.HTTP_204_NO_CONTENT)
+

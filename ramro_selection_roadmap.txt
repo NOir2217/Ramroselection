@@ -749,6 +749,112 @@ PHASE 10 — POLISH, DUMMY DATA DEPTH, QA
     reflects new review.
   - Repeat the same walk once on a real mobile device end-to-end.
 
+
+
+  You are continuing work on an existing Django + React e-commerce project called
+"Ramro Selection." Multiple AI sessions have worked on this codebase across
+different phases of a roadmap (attached/referenced as progress.txt and the
+project roadmap file). Some phases were completed by different tools, so your
+FIRST job is to verify what actually exists before changing anything — do not
+assume the codebase matches the roadmap just because a phase is marked done.
+
+Work through the following four tasks IN ORDER. Do not skip ahead. After each
+task, report what you found/changed before moving to the next.
+
+=================================================================
+TASK 1 — INTEGRATION & CONSISTENCY AUDIT (do this first, no exceptions)
+=================================================================
+1. Run `python manage.py makemigrations --check` and `python manage.py migrate`.
+   Report any conflicts, unapplied migrations, or errors.
+2. Inspect every view/endpoint in the backend (products, orders, accounts,
+   admin apps). For each one, confirm it has the correct DRF permission class
+   (IsAuthenticated for customer-only actions, IsAdminUser for admin-only
+   actions, AllowAny only where genuinely public like product browsing).
+   List any endpoint missing proper permission checks.
+3. Check whether security_checklist.md exists and is filled in for every
+   endpoint. If it stalled partway (e.g. stops around a certain phase), flag
+   which endpoints are missing rows and fill them in based on your review in
+   step 2.
+4. Search for duplicate or dead code — serializers, views, or React components
+   that appear to have been built twice with slightly different names or in
+   different files, likely from different AI sessions working the same phase.
+5. Confirm JWT auth (access token in memory, refresh token in httpOnly/Secure/
+   SameSite=Strict cookie) is actually wired up consistently across ALL
+   protected routes, not just the ones built in the auth phase.
+6. Run the full end-to-end smoke test: browse -> filter -> search -> product
+   detail -> add to cart -> guest checkout -> order confirmation -> order
+   tracking -> admin moves order through status -> customer sees update ->
+   return request -> admin approves a review -> review shows on product page.
+   Report any step that fails or is missing.
+
+Do NOT proceed to Task 2 until you've reported the audit results.
+
+=================================================================
+TASK 2 — CATEGORY PIVOT: replace Clothing with Bags (keep Cosmetics/Makeup/
+Skincare), using my real dummy product photos
+=================================================================
+Context: we are dropping the Clothing category entirely and replacing it with
+Bags, alongside the existing Cosmetics-family categories (Skincare, Makeup,
+Haircare). My actual dummy photos are: a large purse, a small purse (different
+color), nail polish, eyeliner, sunscreen, shampoo, hair mask.
+
+1. Remove/retire the Clothing category and any clothing-specific product_type
+   branching in models, filters, and seed data. Do NOT delete migrations
+   destructively — prefer leaving unused fields (fit, season) in place but
+   unused, rather than risky schema surgery.
+2. Add "Bags" as a product_type/category with sensible subcategory-level
+   filters: material (leather/canvas/nylon), size (small/medium/large),
+   closure type, color.
+3. Confirm/extend Skincare, Makeup, Haircare as subcategories under the
+   existing Cosmetics product_type, matching filters already built
+   (skin type, finish, ingredients/vegan/cruelty-free).
+4. Check the ProductImage model: if images are stored as a URLField (pointing
+   to external URLs like Unsplash), CONVERT this to a real Django FileField/
+   ImageField with MEDIA_ROOT configured, so images can be uploaded directly
+   through the Django admin from local files. Confirm this works by uploading
+   one test image through /admin/ before proceeding.
+5. Update seed_products.py to reflect the new category structure (Bags +
+   Cosmetics subcategories only, no Clothing), but do NOT auto-seed my real
+   product photos — I will upload those seven images manually through the
+   admin panel myself once the FileField conversion is confirmed working.
+6. Tell me clearly, in plain language: can I now log into /admin/, open a
+   product, and upload an image file directly from my computer? If not yet,
+   what exactly is blocking it and what do I need to do first?
+
+=================================================================
+TASK 3 — VULNERABILITY & BUG SWEEP
+=================================================================
+1. Re-test (don't just re-read) the Phase 0 security checklist:
+   - Attempt 10 rapid login requests and confirm rate limiting blocks it.
+   - Call an /api/admin/* endpoint using a valid but non-staff JWT (curl) and
+     confirm you get 403, not 200.
+   - Inspect actual response headers to confirm the refresh token cookie is
+     httpOnly + Secure + SameSite=Strict.
+2. Run `npm audit` in the frontend and `pip-audit` (or `pip list --outdated`)
+   in the backend. List any high/critical vulnerabilities and fix them.
+3. Search the codebase and git history for hardcoded secrets or DEBUG=True:
+   `grep -rn "SECRET_KEY\|DEBUG = True\|password" .` — report anything found.
+4. Check file upload validation (from Task 2's image upload work): confirm
+   file type and size are validated server-side, not just by file extension.
+5. Report all findings as a numbered list: [Severity: High/Medium/Low] —
+   [Issue] — [File/location] — [Suggested fix]. Fix High severity issues
+   immediately; ask me before fixing Medium/Low if they require design
+   decisions.
+
+=================================================================
+TASK 4 — WRAP UP
+=================================================================
+1. Update security_checklist.md and progress.txt with everything done in
+   Tasks 1-3.
+2. Give me a plain-English summary (no jargon) of:
+   - what was broken and is now fixed
+   - what I still need to do manually (e.g. uploading my 7 images)
+   - anything you were not able to fix and why
+3. Commit your work with a clear commit message if git is set up, and tell me
+   what the commit message was.
+
+Do not skip Task 1. Do not silently assume prior phases were done correctly.
+
 ================================================================================
 END OF ROADMAP
 ================================================================================

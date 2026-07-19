@@ -1,0 +1,1847 @@
+{
+  "communities": {
+    "0": [
+      "accounts_admin",
+      "accounts_admin_addressadmin",
+      "accounts_admin_addressinline",
+      "accounts_admin_customerprofileadmin",
+      "accounts_models",
+      "accounts_models_address",
+      "accounts_models_address_str",
+      "accounts_models_customerprofile",
+      "accounts_models_customerprofile_str",
+      "accounts_models_meta",
+      "orders_admin",
+      "orders_admin_cartadmin",
+      "orders_admin_cartitemadmin",
+      "orders_admin_cartiteminline",
+      "orders_admin_discountruleadmin",
+      "orders_admin_orderadmin",
+      "orders_admin_orderitemadmin",
+      "orders_admin_orderiteminline",
+      "orders_admin_returnrequestadmin",
+      "orders_models",
+      "orders_models_cart",
+      "orders_models_cart_str",
+      "orders_models_cartitem",
+      "orders_models_cartitem_str",
+      "orders_models_discountrule",
+      "orders_models_discountrule_str",
+      "orders_models_order",
+      "orders_models_order_save",
+      "orders_models_order_str",
+      "orders_models_orderitem",
+      "orders_models_orderitem_str",
+      "orders_models_returnrequest",
+      "orders_models_returnrequest_str",
+      "orders_serializers",
+      "orders_serializers_cartitemserializer",
+      "orders_serializers_cartitemserializer_get_line_total",
+      "orders_serializers_cartserializer",
+      "orders_serializers_cartserializer_get_subtotal",
+      "orders_serializers_discountruleserializer",
+      "orders_serializers_meta",
+      "orders_serializers_orderitemserializer",
+      "orders_serializers_orderserializer",
+      "orders_serializers_returnrequestserializer",
+      "orders_urls",
+      "orders_views",
+      "orders_views_adminabandonedcartsapiview",
+      "orders_views_adminabandonedcartsapiview_get",
+      "orders_views_adminanalyticsapiview",
+      "orders_views_adminanalyticsapiview_bucket_key",
+      "orders_views_adminanalyticsapiview_get",
+      "orders_views_admindashboardstatsview",
+      "orders_views_admindashboardstatsview_get",
+      "orders_views_admindiscountdetailapiview",
+      "orders_views_admindiscountdetailapiview_delete",
+      "orders_views_admindiscountdetailapiview_patch",
+      "orders_views_admindiscountlistapiview",
+      "orders_views_admindiscountlistapiview_get",
+      "orders_views_admindiscountlistapiview_post",
+      "orders_views_adminexpiringproductsapiview",
+      "orders_views_adminexpiringproductsapiview_get",
+      "orders_views_adminlowstockapiview",
+      "orders_views_adminlowstockapiview_get",
+      "orders_views_adminorderlistapiview",
+      "orders_views_adminorderlistapiview_get",
+      "orders_views_adminorderstatusupdateapiview",
+      "orders_views_adminorderstatusupdateapiview_patch",
+      "orders_views_cartapiview",
+      "orders_views_cartapiview_get",
+      "orders_views_cartapiview_get_cart",
+      "orders_views_cartapiview_set_cart_cookie",
+      "orders_views_cartitemapiview",
+      "orders_views_cartitemapiview_get_cart",
+      "orders_views_cartitemapiview_post",
+      "orders_views_cartitemdetailapiview",
+      "orders_views_cartitemdetailapiview_delete",
+      "orders_views_cartitemdetailapiview_get_cart",
+      "orders_views_cartitemdetailapiview_patch",
+      "orders_views_cartmergeapiview",
+      "orders_views_cartmergeapiview_post",
+      "orders_views_checkoutapiview",
+      "orders_views_checkoutapiview_get_cart",
+      "orders_views_checkoutapiview_post",
+      "orders_views_isadminuser",
+      "orders_views_isadminuser_has_permission",
+      "orders_views_orderlistapiview",
+      "orders_views_orderlistapiview_get",
+      "orders_views_orderretrieveapiview",
+      "orders_views_orderretrieveapiview_get",
+      "orders_views_orderreturnapiview",
+      "orders_views_orderreturnapiview_post",
+      "orders_views_py_apiview",
+      "orders_views_py_basepermission",
+      "orders_views_rationale_217"
+    ],
+    "1": [
+      "basecommand",
+      "pagenumberpagination",
+      "products_admin",
+      "products_admin_categoryadmin",
+      "products_admin_collectionadmin",
+      "products_admin_productadmin",
+      "products_admin_productimageadmin",
+      "products_admin_productimageinline",
+      "products_admin_productvariantadmin",
+      "products_admin_productvariantinline",
+      "products_admin_sizeguideadmin",
+      "products_management_commands_seed_products",
+      "products_management_commands_seed_products_command",
+      "products_management_commands_seed_products_command_handle",
+      "products_migrations_0005_bags_fields_and_images",
+      "products_migrations_0005_bags_fields_and_images_migration",
+      "products_models",
+      "products_models_category",
+      "products_models_category_str",
+      "products_models_collection",
+      "products_models_collection_str",
+      "products_models_meta",
+      "products_models_product",
+      "products_models_product_str",
+      "products_models_productimage",
+      "products_models_productimage_str",
+      "products_models_productvariant",
+      "products_models_productvariant_str",
+      "products_models_sizeguide",
+      "products_models_sizeguide_str",
+      "products_models_validate_image_size",
+      "products_serializers",
+      "products_serializers_categoryserializer",
+      "products_serializers_collectionserializer",
+      "products_serializers_collectionserializer_create",
+      "products_serializers_collectionserializer_get_productcount",
+      "products_serializers_collectionserializer_update",
+      "products_serializers_meta",
+      "products_serializers_productimageserializer",
+      "products_serializers_productimageserializer_to_representation",
+      "products_serializers_productserializer",
+      "products_serializers_productserializer_get_reviews",
+      "products_serializers_productserializer_get_sizeguide",
+      "products_serializers_productserializer_to_representation",
+      "products_serializers_productvariantserializer",
+      "products_serializers_reviewserializer",
+      "products_serializers_sizeguideserializer",
+      "products_urls",
+      "products_views",
+      "products_views_adminbulkimageuploadapiview",
+      "products_views_adminbulkimageuploadapiview_patch",
+      "products_views_adminbulkimageuploadapiview_post",
+      "products_views_adminbulkvariantcreateapiview",
+      "products_views_adminbulkvariantcreateapiview_post",
+      "products_views_admincollectiondetailapiview",
+      "products_views_admincollectiondetailapiview_delete",
+      "products_views_admincollectiondetailapiview_get",
+      "products_views_admincollectiondetailapiview_patch",
+      "products_views_admincollectionlistapiview",
+      "products_views_admincollectionlistapiview_get",
+      "products_views_admincollectionlistapiview_post",
+      "products_views_adminproductlistapiview",
+      "products_views_adminproductlistapiview_get",
+      "products_views_adminreviewmoderationapiview",
+      "products_views_adminreviewmoderationapiview_get",
+      "products_views_adminreviewmoderationapiview_patch",
+      "products_views_adminvariantapiview",
+      "products_views_adminvariantapiview_delete",
+      "products_views_adminvariantapiview_get",
+      "products_views_adminvariantapiview_patch",
+      "products_views_adminvariantapiview_post",
+      "products_views_api_search_products",
+      "products_views_isadminuser",
+      "products_views_isadminuser_has_permission",
+      "products_views_productdetailapiview",
+      "products_views_productlistapiview",
+      "products_views_productlistapiview_get_queryset",
+      "products_views_productpagination",
+      "products_views_productrecommendationsapiview",
+      "products_views_productrecommendationsapiview_get",
+      "products_views_py_apiview",
+      "products_views_py_basepermission",
+      "products_views_serialize_product"
+    ],
+    "2": [
+      "frontend_src_app_components_ui_avatar",
+      "frontend_src_app_components_ui_avatar_avatar",
+      "frontend_src_app_components_ui_avatar_avatarfallback",
+      "frontend_src_app_components_ui_avatar_avatarimage",
+      "frontend_src_app_components_ui_breadcrumb",
+      "frontend_src_app_components_ui_breadcrumb_breadcrumb",
+      "frontend_src_app_components_ui_breadcrumb_breadcrumbellipsis",
+      "frontend_src_app_components_ui_breadcrumb_breadcrumbitem",
+      "frontend_src_app_components_ui_breadcrumb_breadcrumblink",
+      "frontend_src_app_components_ui_breadcrumb_breadcrumblist",
+      "frontend_src_app_components_ui_breadcrumb_breadcrumbpage",
+      "frontend_src_app_components_ui_breadcrumb_breadcrumbseparator",
+      "frontend_src_app_components_ui_dialog_dialogfooter",
+      "frontend_src_app_components_ui_dialog_dialogoverlay",
+      "frontend_src_app_components_ui_input_otp",
+      "frontend_src_app_components_ui_input_otp_inputotp",
+      "frontend_src_app_components_ui_input_otp_inputotpgroup",
+      "frontend_src_app_components_ui_input_otp_inputotpseparator",
+      "frontend_src_app_components_ui_input_otp_inputotpslot",
+      "frontend_src_app_components_ui_menubar",
+      "frontend_src_app_components_ui_menubar_menubar",
+      "frontend_src_app_components_ui_menubar_menubarcheckboxitem",
+      "frontend_src_app_components_ui_menubar_menubarcontent",
+      "frontend_src_app_components_ui_menubar_menubargroup",
+      "frontend_src_app_components_ui_menubar_menubaritem",
+      "frontend_src_app_components_ui_menubar_menubarlabel",
+      "frontend_src_app_components_ui_menubar_menubarmenu",
+      "frontend_src_app_components_ui_menubar_menubarportal",
+      "frontend_src_app_components_ui_menubar_menubarradiogroup",
+      "frontend_src_app_components_ui_menubar_menubarradioitem",
+      "frontend_src_app_components_ui_menubar_menubarseparator",
+      "frontend_src_app_components_ui_menubar_menubarshortcut",
+      "frontend_src_app_components_ui_menubar_menubarsub",
+      "frontend_src_app_components_ui_menubar_menubarsubcontent",
+      "frontend_src_app_components_ui_menubar_menubarsubtrigger",
+      "frontend_src_app_components_ui_menubar_menubartrigger",
+      "frontend_src_app_components_ui_radio_group",
+      "frontend_src_app_components_ui_radio_group_radiogroup",
+      "frontend_src_app_components_ui_radio_group_radiogroupitem",
+      "frontend_src_app_components_ui_scroll_area",
+      "frontend_src_app_components_ui_scroll_area_scrollarea",
+      "frontend_src_app_components_ui_scroll_area_scrollbar",
+      "frontend_src_app_components_ui_table_tablecaption",
+      "frontend_src_app_components_ui_table_tablefooter",
+      "frontend_src_app_components_ui_utils_cn"
+    ],
+    "3": [
+      "frontend_src_app_admin_abandonedcartspanel",
+      "frontend_src_app_admin_abandonedcartspanel_abandonedcart",
+      "frontend_src_app_admin_abandonedcartspanel_abandoneditem",
+      "frontend_src_app_admin_analyticsdashboard",
+      "frontend_src_app_admin_analyticsdashboard_analyticsdashboard",
+      "frontend_src_app_admin_analyticsdashboard_analyticsdata",
+      "frontend_src_app_admin_analyticsdashboard_aovpoint",
+      "frontend_src_app_admin_analyticsdashboard_categoryrevenue",
+      "frontend_src_app_admin_analyticsdashboard_datapoint",
+      "frontend_src_app_admin_analyticsdashboard_growthpoint",
+      "frontend_src_app_admin_analyticsdashboard_horizontalbarchart",
+      "frontend_src_app_admin_analyticsdashboard_minibarchart",
+      "frontend_src_app_admin_analyticsdashboard_ordervolumepoint",
+      "frontend_src_app_admin_analyticsdashboard_topproduct",
+      "frontend_src_app_admin_collectionsmanager",
+      "frontend_src_app_admin_collectionsmanager_collection",
+      "frontend_src_app_admin_collectionsmanager_product",
+      "frontend_src_app_admin_expiringproductspanel",
+      "frontend_src_app_admin_expiringproductspanel_expiringvariant",
+      "frontend_src_app_admin_lowstockpanel",
+      "frontend_src_app_admin_lowstockpanel_lowstockvariant",
+      "frontend_src_app_admin_productvarianteditor",
+      "frontend_src_app_admin_productvarianteditor_product",
+      "frontend_src_app_admin_productvarianteditor_variant",
+      "frontend_src_app_components_ui_badge",
+      "frontend_src_app_components_ui_badge_badge",
+      "frontend_src_app_components_ui_badge_badgevariants",
+      "frontend_src_app_components_ui_dialog",
+      "frontend_src_app_components_ui_dialog_dialog",
+      "frontend_src_app_components_ui_dialog_dialogclose",
+      "frontend_src_app_components_ui_dialog_dialogcontent",
+      "frontend_src_app_components_ui_dialog_dialogheader",
+      "frontend_src_app_components_ui_dialog_dialogportal",
+      "frontend_src_app_components_ui_dialog_dialogtitle",
+      "frontend_src_app_components_ui_dialog_dialogtrigger",
+      "frontend_src_app_components_ui_table",
+      "frontend_src_app_components_ui_table_table",
+      "frontend_src_app_components_ui_table_tablebody",
+      "frontend_src_app_components_ui_table_tablecell",
+      "frontend_src_app_components_ui_table_tablehead",
+      "frontend_src_app_components_ui_table_tableheader",
+      "frontend_src_app_components_ui_table_tablerow"
+    ],
+    "4": [
+      "ajv",
+      "ajv_formats",
+      "ajv_formats_draft2019",
+      "cli_table3",
+      "diff",
+      "frontend_local_npm_package_devdependencies",
+      "frontend_local_npm_package_devdependencies_ajv",
+      "frontend_local_npm_package_devdependencies_ajv_formats",
+      "frontend_local_npm_package_devdependencies_ajv_formats_draft2019",
+      "frontend_local_npm_package_devdependencies_cli_table3",
+      "frontend_local_npm_package_devdependencies_diff",
+      "frontend_local_npm_package_devdependencies_nock",
+      "frontend_local_npm_package_devdependencies_npm_packlist",
+      "frontend_local_npm_package_devdependencies_npmcli_docs",
+      "frontend_local_npm_package_devdependencies_npmcli_eslint_config",
+      "frontend_local_npm_package_devdependencies_npmcli_git",
+      "frontend_local_npm_package_devdependencies_npmcli_mock_globals",
+      "frontend_local_npm_package_devdependencies_npmcli_mock_registry",
+      "frontend_local_npm_package_devdependencies_npmcli_template_oss",
+      "frontend_local_npm_package_devdependencies_remark",
+      "frontend_local_npm_package_devdependencies_remark_gfm",
+      "frontend_local_npm_package_devdependencies_remark_github",
+      "frontend_local_npm_package_devdependencies_rimraf",
+      "frontend_local_npm_package_devdependencies_spawk",
+      "frontend_local_npm_package_devdependencies_tap",
+      "frontend_local_npm_package_devdependencies_tufjs_repo_mock",
+      "nock",
+      "npm_packlist",
+      "npmcli_docs",
+      "npmcli_eslint_config",
+      "npmcli_git",
+      "npmcli_mock_globals",
+      "npmcli_mock_registry",
+      "npmcli_template_oss",
+      "remark",
+      "remark_gfm",
+      "remark_github",
+      "rimraf",
+      "spawk",
+      "tap",
+      "tufjs_repo_mock"
+    ],
+    "5": [
+      "frontend_src_app_components_ui_separator",
+      "frontend_src_app_components_ui_separator_separator",
+      "frontend_src_app_components_ui_sidebar",
+      "frontend_src_app_components_ui_sidebar_sidebar",
+      "frontend_src_app_components_ui_sidebar_sidebarcontent",
+      "frontend_src_app_components_ui_sidebar_sidebarcontext",
+      "frontend_src_app_components_ui_sidebar_sidebarcontextprops",
+      "frontend_src_app_components_ui_sidebar_sidebarfooter",
+      "frontend_src_app_components_ui_sidebar_sidebargroup",
+      "frontend_src_app_components_ui_sidebar_sidebargroupaction",
+      "frontend_src_app_components_ui_sidebar_sidebargroupcontent",
+      "frontend_src_app_components_ui_sidebar_sidebargrouplabel",
+      "frontend_src_app_components_ui_sidebar_sidebarheader",
+      "frontend_src_app_components_ui_sidebar_sidebarinput",
+      "frontend_src_app_components_ui_sidebar_sidebarinset",
+      "frontend_src_app_components_ui_sidebar_sidebarmenu",
+      "frontend_src_app_components_ui_sidebar_sidebarmenuaction",
+      "frontend_src_app_components_ui_sidebar_sidebarmenubadge",
+      "frontend_src_app_components_ui_sidebar_sidebarmenubutton",
+      "frontend_src_app_components_ui_sidebar_sidebarmenubuttonvariants",
+      "frontend_src_app_components_ui_sidebar_sidebarmenuitem",
+      "frontend_src_app_components_ui_sidebar_sidebarmenuskeleton",
+      "frontend_src_app_components_ui_sidebar_sidebarmenusub",
+      "frontend_src_app_components_ui_sidebar_sidebarmenusubbutton",
+      "frontend_src_app_components_ui_sidebar_sidebarmenusubitem",
+      "frontend_src_app_components_ui_sidebar_sidebarprovider",
+      "frontend_src_app_components_ui_sidebar_sidebarrail",
+      "frontend_src_app_components_ui_sidebar_sidebarseparator",
+      "frontend_src_app_components_ui_sidebar_sidebartrigger",
+      "frontend_src_app_components_ui_sidebar_usesidebar",
+      "frontend_src_app_components_ui_skeleton",
+      "frontend_src_app_components_ui_skeleton_skeleton",
+      "frontend_src_app_components_ui_tooltip",
+      "frontend_src_app_components_ui_tooltip_tooltip",
+      "frontend_src_app_components_ui_tooltip_tooltipcontent",
+      "frontend_src_app_components_ui_tooltip_tooltipprovider",
+      "frontend_src_app_components_ui_tooltip_tooltiptrigger",
+      "frontend_src_app_components_ui_use_mobile",
+      "frontend_src_app_components_ui_use_mobile_useismobile"
+    ],
+    "6": [
+      "frontend_src_app_components_productcatalogue",
+      "frontend_src_app_components_productcatalogue_product",
+      "frontend_src_app_components_productcatalogue_productcatalogue",
+      "frontend_src_app_components_sortdropdown",
+      "frontend_src_app_components_sortdropdown_sortdropdown",
+      "frontend_src_app_components_sortdropdown_sortdropdownprops",
+      "frontend_src_app_components_sortdropdown_sortoption",
+      "frontend_src_app_components_sortdropdown_sortoptions",
+      "frontend_src_app_components_ui_dropdown_menu",
+      "frontend_src_app_components_ui_dropdown_menu_dropdownmenu",
+      "frontend_src_app_components_ui_dropdown_menu_dropdownmenucheckboxitem",
+      "frontend_src_app_components_ui_dropdown_menu_dropdownmenucontent",
+      "frontend_src_app_components_ui_dropdown_menu_dropdownmenugroup",
+      "frontend_src_app_components_ui_dropdown_menu_dropdownmenuitem",
+      "frontend_src_app_components_ui_dropdown_menu_dropdownmenulabel",
+      "frontend_src_app_components_ui_dropdown_menu_dropdownmenuportal",
+      "frontend_src_app_components_ui_dropdown_menu_dropdownmenuradiogroup",
+      "frontend_src_app_components_ui_dropdown_menu_dropdownmenuradioitem",
+      "frontend_src_app_components_ui_dropdown_menu_dropdownmenuseparator",
+      "frontend_src_app_components_ui_dropdown_menu_dropdownmenushortcut",
+      "frontend_src_app_components_ui_dropdown_menu_dropdownmenusub",
+      "frontend_src_app_components_ui_dropdown_menu_dropdownmenusubcontent",
+      "frontend_src_app_components_ui_dropdown_menu_dropdownmenusubtrigger",
+      "frontend_src_app_components_ui_dropdown_menu_dropdownmenutrigger",
+      "frontend_src_app_components_ui_sheet",
+      "frontend_src_app_components_ui_sheet_sheet",
+      "frontend_src_app_components_ui_sheet_sheetclose",
+      "frontend_src_app_components_ui_sheet_sheetcontent",
+      "frontend_src_app_components_ui_sheet_sheetdescription",
+      "frontend_src_app_components_ui_sheet_sheetfooter",
+      "frontend_src_app_components_ui_sheet_sheetheader",
+      "frontend_src_app_components_ui_sheet_sheetoverlay",
+      "frontend_src_app_components_ui_sheet_sheetportal",
+      "frontend_src_app_components_ui_sheet_sheettitle",
+      "frontend_src_app_components_ui_sheet_sheettrigger"
+    ],
+    "7": [
+      "accounts_serializers",
+      "accounts_serializers_customerprofileserializer",
+      "accounts_serializers_meta",
+      "accounts_serializers_rationale_33",
+      "accounts_serializers_registerserializer",
+      "accounts_serializers_registerserializer_create",
+      "accounts_serializers_registerserializer_validate_email",
+      "accounts_serializers_registerserializer_validate_password",
+      "accounts_serializers_userserializer",
+      "accounts_urls",
+      "accounts_views",
+      "accounts_views_customtokenobtainpairview",
+      "accounts_views_customtokenobtainpairview_post",
+      "accounts_views_customtokenrefreshview",
+      "accounts_views_customtokenrefreshview_post",
+      "accounts_views_logoutview",
+      "accounts_views_logoutview_post",
+      "accounts_views_profilepreferencesview",
+      "accounts_views_profilepreferencesview_get",
+      "accounts_views_profilepreferencesview_patch",
+      "accounts_views_py_apiview",
+      "accounts_views_rationale_112",
+      "accounts_views_rationale_12",
+      "accounts_views_rationale_23",
+      "accounts_views_rationale_47",
+      "accounts_views_rationale_93",
+      "accounts_views_registerview",
+      "accounts_views_registerview_post",
+      "accounts_views_set_jwt_cookies",
+      "tokenobtainpairview",
+      "tokenrefreshview"
+    ],
+    "8": [
+      "engagement_admin",
+      "engagement_admin_recentlyviewedadmin",
+      "engagement_admin_reviewadmin",
+      "engagement_admin_reviewadmin_approve_reviews",
+      "engagement_admin_wishlistitemadmin",
+      "engagement_models",
+      "engagement_models_meta",
+      "engagement_models_recentlyviewed",
+      "engagement_models_recentlyviewed_str",
+      "engagement_models_review",
+      "engagement_models_review_str",
+      "engagement_models_wishlistitem",
+      "engagement_models_wishlistitem_str",
+      "engagement_serializers",
+      "engagement_serializers_meta",
+      "engagement_serializers_wishlistitemserializer",
+      "engagement_urls",
+      "engagement_views",
+      "engagement_views_py_apiview",
+      "engagement_views_rationale_95",
+      "engagement_views_recentlyviewedapiview",
+      "engagement_views_recentlyviewedapiview_get",
+      "engagement_views_recentlyviewedapiview_get_session_key",
+      "engagement_views_recentlyviewedapiview_post",
+      "engagement_views_wishlistapiview",
+      "engagement_views_wishlistapiview_get",
+      "engagement_views_wishlistapiview_get_session_key",
+      "engagement_views_wishlistapiview_post",
+      "engagement_views_wishlistitemapiview",
+      "engagement_views_wishlistitemapiview_delete"
+    ],
+    "9": [
+      "frontend_package",
+      "frontend_package_devdependencies",
+      "frontend_package_devdependencies_tailwindcss",
+      "frontend_package_devdependencies_tailwindcss_vite",
+      "frontend_package_devdependencies_vite",
+      "frontend_package_devdependencies_vitejs_plugin_react",
+      "frontend_package_name",
+      "frontend_package_overrides_vite",
+      "frontend_package_peerdependencies",
+      "frontend_package_peerdependencies_react",
+      "frontend_package_peerdependencies_react_dom",
+      "frontend_package_peerdependenciesmeta",
+      "frontend_package_peerdependenciesmeta_react",
+      "frontend_package_peerdependenciesmeta_react_dom",
+      "frontend_package_pnpm",
+      "frontend_package_pnpm_overrides",
+      "frontend_package_private",
+      "frontend_package_react_dom_optional",
+      "frontend_package_react_optional",
+      "frontend_package_scripts",
+      "frontend_package_scripts_build",
+      "frontend_package_scripts_dev",
+      "frontend_package_type",
+      "frontend_package_version",
+      "react",
+      "react_dom",
+      "tailwindcss",
+      "tailwindcss_vite",
+      "vite",
+      "vitejs_plugin_react"
+    ],
+    "10": [
+      "frontend_src_app_admin_bulkimageupload",
+      "frontend_src_app_admin_bulkimageupload_product",
+      "frontend_src_app_admin_bulkimageupload_uploadedimage",
+      "frontend_src_app_admin_discountsmanager",
+      "frontend_src_app_admin_discountsmanager_discountrule",
+      "frontend_src_app_admin_discountsmanager_rule_type_labels",
+      "frontend_src_app_admin_orderskanban",
+      "frontend_src_app_admin_orderskanban_columns",
+      "frontend_src_app_admin_orderskanban_order",
+      "frontend_src_app_admin_orderskanban_orderitem",
+      "frontend_src_app_admin_orderskanban_orderskanban",
+      "frontend_src_app_admin_orderskanban_status_labels",
+      "frontend_src_app_admin_orderskanban_status_options",
+      "frontend_src_app_components_footer",
+      "frontend_src_app_components_footer_footer",
+      "frontend_src_app_components_ui_input",
+      "frontend_src_app_components_ui_input_input",
+      "frontend_src_app_components_ui_select",
+      "frontend_src_app_components_ui_select_select",
+      "frontend_src_app_components_ui_select_selectcontent",
+      "frontend_src_app_components_ui_select_selectgroup",
+      "frontend_src_app_components_ui_select_selectitem",
+      "frontend_src_app_components_ui_select_selectlabel",
+      "frontend_src_app_components_ui_select_selectscrolldownbutton",
+      "frontend_src_app_components_ui_select_selectscrollupbutton",
+      "frontend_src_app_components_ui_select_selectseparator",
+      "frontend_src_app_components_ui_select_selecttrigger",
+      "frontend_src_app_components_ui_select_selectvalue",
+      "frontend_src_app_components_ui_textarea",
+      "frontend_src_app_components_ui_textarea_textarea"
+    ],
+    "11": [
+      "frontend_src_app_admin_adminlayout",
+      "frontend_src_app_admin_adminlayout_adminlayout",
+      "frontend_src_app_admin_adminlayout_nav_items",
+      "frontend_src_app_app",
+      "frontend_src_app_app_app",
+      "frontend_src_app_components_cartdrawer",
+      "frontend_src_app_components_cartdrawer_cartdrawer",
+      "frontend_src_app_components_cartdrawer_cartdrawerprops",
+      "frontend_src_app_components_header",
+      "frontend_src_app_components_header_header",
+      "frontend_src_app_components_header_headerprops",
+      "frontend_src_app_components_ui_sonner",
+      "frontend_src_app_components_ui_sonner_toaster",
+      "frontend_src_app_context_authcontext_useauth",
+      "frontend_src_app_context_cartcontext",
+      "frontend_src_app_context_cartcontext_cart",
+      "frontend_src_app_context_cartcontext_cartcontext",
+      "frontend_src_app_context_cartcontext_cartcontexttype",
+      "frontend_src_app_context_cartcontext_cartitem",
+      "frontend_src_app_context_cartcontext_cartprovider",
+      "frontend_src_app_context_cartcontext_usecart",
+      "frontend_src_app_pages_checkout",
+      "frontend_src_app_pages_checkout_checkout",
+      "frontend_src_app_pages_login_login",
+      "frontend_src_app_pages_myaccount_myaccount",
+      "frontend_src_app_pages_productdetail_productdetail",
+      "frontend_src_app_pages_register_register"
+    ],
+    "12": [
+      "frontend_src_app_components_comparebar",
+      "frontend_src_app_components_comparebar_comparebar",
+      "frontend_src_app_components_figma_imagewithfallback",
+      "frontend_src_app_components_figma_imagewithfallback_imagewithfallback",
+      "frontend_src_app_components_productcard",
+      "frontend_src_app_components_productcard_product",
+      "frontend_src_app_components_productcard_productcard",
+      "frontend_src_app_components_productcard_productcardprops",
+      "frontend_src_app_components_ui_button",
+      "frontend_src_app_components_ui_button_button",
+      "frontend_src_app_context_comparecontext",
+      "frontend_src_app_context_comparecontext_comparecontext",
+      "frontend_src_app_context_comparecontext_comparecontexttype",
+      "frontend_src_app_context_comparecontext_product",
+      "frontend_src_app_context_comparecontext_usecompare",
+      "frontend_src_app_context_wishlistcontext",
+      "frontend_src_app_context_wishlistcontext_usewishlist",
+      "frontend_src_app_context_wishlistcontext_wishlistcontext",
+      "frontend_src_app_context_wishlistcontext_wishlistcontexttype",
+      "frontend_src_app_context_wishlistcontext_wishlistitem",
+      "frontend_src_app_context_wishlistcontext_wishlistprovider",
+      "frontend_src_app_pages_comparepage",
+      "frontend_src_app_pages_comparepage_comparepage",
+      "frontend_src_app_pages_wishlistpage",
+      "frontend_src_app_pages_wishlistpage_wishlistpage"
+    ],
+    "13": [
+      "frontend_src_app_admin_abandonedcartspanel_abandonedcartspanel",
+      "frontend_src_app_admin_admindashboard",
+      "frontend_src_app_admin_admindashboard_admindashboard",
+      "frontend_src_app_admin_admindashboard_dashboardstats",
+      "frontend_src_app_admin_bulkimageupload_bulkimageupload",
+      "frontend_src_app_admin_collectionsmanager_collectionsmanager",
+      "frontend_src_app_admin_discountsmanager_discountsmanager",
+      "frontend_src_app_admin_expiringproductspanel_expiringproductspanel",
+      "frontend_src_app_admin_lowstockpanel_lowstockpanel",
+      "frontend_src_app_admin_productvarianteditor_productvarianteditor",
+      "frontend_src_app_admin_reviewmoderation",
+      "frontend_src_app_admin_reviewmoderation_pendingreview",
+      "frontend_src_app_admin_reviewmoderation_reviewmoderation",
+      "frontend_src_app_components_productcarousel",
+      "frontend_src_app_components_productcarousel_productcarousel",
+      "frontend_src_app_components_productcarousel_props",
+      "frontend_src_app_pages_ordertracking",
+      "frontend_src_app_pages_ordertracking_ordertracking",
+      "frontend_src_app_pages_ordertracking_stages",
+      "frontend_src_app_utils_api",
+      "frontend_src_app_utils_api_apifetch",
+      "frontend_src_app_utils_api_failedqueue",
+      "frontend_src_app_utils_api_getaccesstokeninmemory",
+      "frontend_src_app_utils_api_processqueue"
+    ],
+    "14": [
+      "frontend_src_app_components_ui_alert_dialog",
+      "frontend_src_app_components_ui_alert_dialog_alertdialog",
+      "frontend_src_app_components_ui_alert_dialog_alertdialogaction",
+      "frontend_src_app_components_ui_alert_dialog_alertdialogcancel",
+      "frontend_src_app_components_ui_alert_dialog_alertdialogcontent",
+      "frontend_src_app_components_ui_alert_dialog_alertdialogdescription",
+      "frontend_src_app_components_ui_alert_dialog_alertdialogfooter",
+      "frontend_src_app_components_ui_alert_dialog_alertdialogheader",
+      "frontend_src_app_components_ui_alert_dialog_alertdialogoverlay",
+      "frontend_src_app_components_ui_alert_dialog_alertdialogportal",
+      "frontend_src_app_components_ui_alert_dialog_alertdialogtitle",
+      "frontend_src_app_components_ui_alert_dialog_alertdialogtrigger",
+      "frontend_src_app_components_ui_button_buttonvariants",
+      "frontend_src_app_components_ui_calendar",
+      "frontend_src_app_components_ui_calendar_calendar",
+      "frontend_src_app_components_ui_pagination",
+      "frontend_src_app_components_ui_pagination_pagination",
+      "frontend_src_app_components_ui_pagination_paginationcontent",
+      "frontend_src_app_components_ui_pagination_paginationellipsis",
+      "frontend_src_app_components_ui_pagination_paginationitem",
+      "frontend_src_app_components_ui_pagination_paginationlink",
+      "frontend_src_app_components_ui_pagination_paginationlinkprops",
+      "frontend_src_app_components_ui_pagination_paginationnext",
+      "frontend_src_app_components_ui_pagination_paginationprevious"
+    ],
+    "15": [
+      "frontend_src_app_components_ui_card",
+      "frontend_src_app_components_ui_card_card",
+      "frontend_src_app_components_ui_card_cardaction",
+      "frontend_src_app_components_ui_card_cardcontent",
+      "frontend_src_app_components_ui_card_carddescription",
+      "frontend_src_app_components_ui_card_cardfooter",
+      "frontend_src_app_components_ui_card_cardheader",
+      "frontend_src_app_components_ui_card_cardtitle",
+      "frontend_src_app_components_ui_label",
+      "frontend_src_app_components_ui_label_label",
+      "frontend_src_app_context_authcontext",
+      "frontend_src_app_context_authcontext_authcontext",
+      "frontend_src_app_context_authcontext_authcontexttype",
+      "frontend_src_app_context_authcontext_authprovider",
+      "frontend_src_app_context_authcontext_user",
+      "frontend_src_app_context_comparecontext_compareprovider",
+      "frontend_src_app_pages_login",
+      "frontend_src_app_pages_myaccount",
+      "frontend_src_app_pages_register",
+      "frontend_src_app_utils_api_setaccesstokeninmemory",
+      "frontend_src_main"
+    ],
+    "16": [
+      "ci_info",
+      "fastest_levenshtein",
+      "frontend_local_npm_package_bundledependencies",
+      "frontend_local_npm_package_dependencies_ci_info",
+      "frontend_local_npm_package_dependencies_glob",
+      "frontend_local_npm_package_dependencies_json_parse_even_better_errors",
+      "frontend_local_npm_package_dependencies_libnpmaccess",
+      "frontend_local_npm_package_dependencies_libnpmexec",
+      "frontend_local_npm_package_dependencies_minipass_pipeline",
+      "frontend_local_npm_package_dependencies_npm_install_checks",
+      "frontend_local_npm_package_dependencies_ssri",
+      "frontend_local_npm_package_dependencies_treeverse",
+      "glob",
+      "json_parse_even_better_errors",
+      "libnpmaccess",
+      "libnpmexec",
+      "minipass_pipeline",
+      "npm_install_checks",
+      "ssri",
+      "treeverse"
+    ],
+    "17": [
+      "frontend_local_npm_package_dependencies",
+      "frontend_local_npm_package_dependencies_fastest_levenshtein",
+      "frontend_local_npm_package_dependencies_ini",
+      "frontend_local_npm_package_dependencies_libnpmteam",
+      "frontend_local_npm_package_dependencies_ms",
+      "frontend_local_npm_package_dependencies_node_gyp",
+      "frontend_local_npm_package_dependencies_npm_profile",
+      "frontend_local_npm_package_dependencies_p_map",
+      "frontend_local_npm_package_dependencies_sigstore_tuf",
+      "frontend_local_npm_package_dependencies_spdx_expression_parse",
+      "frontend_local_npm_package_dependencies_supports_color",
+      "ini",
+      "libnpmteam",
+      "ms",
+      "node_gyp",
+      "npm_profile",
+      "p_map",
+      "sigstore_tuf",
+      "spdx_expression_parse",
+      "supports_color"
+    ],
+    "18": [
+      "frontend_src_app_components_ui_hover_card",
+      "frontend_src_app_components_ui_hover_card_hovercard",
+      "frontend_src_app_components_ui_hover_card_hovercardcontent",
+      "frontend_src_app_components_ui_hover_card_hovercardtrigger",
+      "frontend_src_app_components_ui_progress",
+      "frontend_src_app_components_ui_progress_progress",
+      "frontend_src_app_components_ui_resizable",
+      "frontend_src_app_components_ui_resizable_resizablehandle",
+      "frontend_src_app_components_ui_resizable_resizablepanel",
+      "frontend_src_app_components_ui_resizable_resizablepanelgroup",
+      "frontend_src_app_components_ui_switch",
+      "frontend_src_app_components_ui_switch_switch",
+      "frontend_src_app_components_ui_toggle",
+      "frontend_src_app_components_ui_toggle_group",
+      "frontend_src_app_components_ui_toggle_group_togglegroup",
+      "frontend_src_app_components_ui_toggle_group_togglegroupcontext",
+      "frontend_src_app_components_ui_toggle_group_togglegroupitem",
+      "frontend_src_app_components_ui_toggle_toggle",
+      "frontend_src_app_components_ui_toggle_togglevariants",
+      "frontend_src_app_components_ui_utils"
+    ],
+    "19": [
+      "frontend_local_npm_package_scripts",
+      "frontend_local_npm_package_scripts_dependencies",
+      "frontend_local_npm_package_scripts_dumpconf",
+      "frontend_local_npm_package_scripts_licenses",
+      "frontend_local_npm_package_scripts_lint",
+      "frontend_local_npm_package_scripts_lint_all",
+      "frontend_local_npm_package_scripts_lintfix",
+      "frontend_local_npm_package_scripts_postlint",
+      "frontend_local_npm_package_scripts_posttest",
+      "frontend_local_npm_package_scripts_prepack",
+      "frontend_local_npm_package_scripts_resetdeps",
+      "frontend_local_npm_package_scripts_rp_pull_request",
+      "frontend_local_npm_package_scripts_snap",
+      "frontend_local_npm_package_scripts_template_oss_apply",
+      "frontend_local_npm_package_scripts_test",
+      "frontend_local_npm_package_scripts_test_all",
+      "frontend_local_npm_package_scripts_test_nocolor"
+    ],
+    "20": [
+      "frontend_src_app_components_ui_context_menu",
+      "frontend_src_app_components_ui_context_menu_contextmenu",
+      "frontend_src_app_components_ui_context_menu_contextmenucheckboxitem",
+      "frontend_src_app_components_ui_context_menu_contextmenucontent",
+      "frontend_src_app_components_ui_context_menu_contextmenugroup",
+      "frontend_src_app_components_ui_context_menu_contextmenuitem",
+      "frontend_src_app_components_ui_context_menu_contextmenulabel",
+      "frontend_src_app_components_ui_context_menu_contextmenuportal",
+      "frontend_src_app_components_ui_context_menu_contextmenuradiogroup",
+      "frontend_src_app_components_ui_context_menu_contextmenuradioitem",
+      "frontend_src_app_components_ui_context_menu_contextmenuseparator",
+      "frontend_src_app_components_ui_context_menu_contextmenushortcut",
+      "frontend_src_app_components_ui_context_menu_contextmenusub",
+      "frontend_src_app_components_ui_context_menu_contextmenusubcontent",
+      "frontend_src_app_components_ui_context_menu_contextmenusubtrigger",
+      "frontend_src_app_components_ui_context_menu_contextmenutrigger"
+    ],
+    "21": [
+      "frontend_local_npm_package",
+      "frontend_local_npm_package_author",
+      "frontend_local_npm_package_bugs",
+      "frontend_local_npm_package_bugs_url",
+      "frontend_local_npm_package_description",
+      "frontend_local_npm_package_engines",
+      "frontend_local_npm_package_engines_node",
+      "frontend_local_npm_package_exports",
+      "frontend_local_npm_package_exports_package_json",
+      "frontend_local_npm_package_homepage",
+      "frontend_local_npm_package_license",
+      "frontend_local_npm_package_main",
+      "frontend_local_npm_package_name",
+      "frontend_local_npm_package_version"
+    ],
+    "22": [
+      "frontend_src_app_components_ui_carousel",
+      "frontend_src_app_components_ui_carousel_carousel",
+      "frontend_src_app_components_ui_carousel_carouselapi",
+      "frontend_src_app_components_ui_carousel_carouselcontent",
+      "frontend_src_app_components_ui_carousel_carouselcontext",
+      "frontend_src_app_components_ui_carousel_carouselcontextprops",
+      "frontend_src_app_components_ui_carousel_carouselitem",
+      "frontend_src_app_components_ui_carousel_carouselnext",
+      "frontend_src_app_components_ui_carousel_carouseloptions",
+      "frontend_src_app_components_ui_carousel_carouselplugin",
+      "frontend_src_app_components_ui_carousel_carouselprevious",
+      "frontend_src_app_components_ui_carousel_carouselprops",
+      "frontend_src_app_components_ui_carousel_usecarousel",
+      "frontend_src_app_components_ui_carousel_usecarouselparameters"
+    ],
+    "23": [
+      "class_variance_authority",
+      "emotion_styled",
+      "frontend_package_dependencies",
+      "frontend_package_dependencies_class_variance_authority",
+      "frontend_package_dependencies_emotion_styled",
+      "frontend_package_dependencies_lucide_react",
+      "frontend_package_dependencies_next_themes",
+      "frontend_package_dependencies_radix_ui_react_toggle",
+      "frontend_package_dependencies_react_day_picker",
+      "lucide_react",
+      "next_themes",
+      "radix_ui_react_toggle",
+      "react_day_picker"
+    ],
+    "24": [
+      "frontend_src_app_components_filterpanel",
+      "frontend_src_app_components_filterpanel_filterpanel",
+      "frontend_src_app_components_filterpanel_filterpanelprops",
+      "frontend_src_app_components_filterpanel_maincategories",
+      "frontend_src_app_components_ui_checkbox",
+      "frontend_src_app_components_ui_checkbox_checkbox",
+      "frontend_src_app_components_ui_collapsible",
+      "frontend_src_app_components_ui_collapsible_collapsible",
+      "frontend_src_app_components_ui_collapsible_collapsiblecontent",
+      "frontend_src_app_components_ui_collapsible_collapsibletrigger",
+      "frontend_src_app_components_ui_slider",
+      "frontend_src_app_components_ui_slider_slider"
+    ],
+    "25": [
+      "frontend_src_app_components_ui_form",
+      "frontend_src_app_components_ui_form_formcontrol",
+      "frontend_src_app_components_ui_form_formdescription",
+      "frontend_src_app_components_ui_form_formfield",
+      "frontend_src_app_components_ui_form_formfieldcontext",
+      "frontend_src_app_components_ui_form_formfieldcontextvalue",
+      "frontend_src_app_components_ui_form_formitem",
+      "frontend_src_app_components_ui_form_formitemcontext",
+      "frontend_src_app_components_ui_form_formitemcontextvalue",
+      "frontend_src_app_components_ui_form_formlabel",
+      "frontend_src_app_components_ui_form_formmessage",
+      "frontend_src_app_components_ui_form_useformfield"
+    ],
+    "26": [
+      "frontend_src_app_components_ui_chart",
+      "frontend_src_app_components_ui_chart_chartconfig",
+      "frontend_src_app_components_ui_chart_chartcontainer",
+      "frontend_src_app_components_ui_chart_chartcontext",
+      "frontend_src_app_components_ui_chart_chartcontextprops",
+      "frontend_src_app_components_ui_chart_chartlegendcontent",
+      "frontend_src_app_components_ui_chart_chartstyle",
+      "frontend_src_app_components_ui_chart_charttooltipcontent",
+      "frontend_src_app_components_ui_chart_getpayloadconfigfrompayload",
+      "frontend_src_app_components_ui_chart_themes",
+      "frontend_src_app_components_ui_chart_usechart"
+    ],
+    "27": [
+      "frontend_src_app_components_ui_command",
+      "frontend_src_app_components_ui_command_command",
+      "frontend_src_app_components_ui_command_commanddialog",
+      "frontend_src_app_components_ui_command_commandempty",
+      "frontend_src_app_components_ui_command_commandgroup",
+      "frontend_src_app_components_ui_command_commandinput",
+      "frontend_src_app_components_ui_command_commanditem",
+      "frontend_src_app_components_ui_command_commandlist",
+      "frontend_src_app_components_ui_command_commandseparator",
+      "frontend_src_app_components_ui_command_commandshortcut",
+      "frontend_src_app_components_ui_dialog_dialogdescription"
+    ],
+    "28": [
+      "frontend_src_app_components_ui_drawer",
+      "frontend_src_app_components_ui_drawer_drawer",
+      "frontend_src_app_components_ui_drawer_drawerclose",
+      "frontend_src_app_components_ui_drawer_drawercontent",
+      "frontend_src_app_components_ui_drawer_drawerdescription",
+      "frontend_src_app_components_ui_drawer_drawerfooter",
+      "frontend_src_app_components_ui_drawer_drawerheader",
+      "frontend_src_app_components_ui_drawer_draweroverlay",
+      "frontend_src_app_components_ui_drawer_drawerportal",
+      "frontend_src_app_components_ui_drawer_drawertitle",
+      "frontend_src_app_components_ui_drawer_drawertrigger"
+    ],
+    "29": [
+      "frontend_local_npm_bin_npx_cli",
+      "frontend_local_npm_bin_npx_cli_cli",
+      "frontend_local_npm_bin_npx_cli_definitions_shorthands",
+      "frontend_local_npm_bin_npx_cli_npmswitches",
+      "frontend_local_npm_bin_npx_cli_opts",
+      "frontend_local_npm_bin_npx_cli_rationale_9",
+      "frontend_local_npm_bin_npx_cli_removed",
+      "frontend_local_npm_bin_npx_cli_removedopts",
+      "frontend_local_npm_bin_npx_cli_removedswitches",
+      "frontend_local_npm_bin_npx_cli_switches"
+    ],
+    "30": [
+      "frontend_src_app_components_ui_navigation_menu",
+      "frontend_src_app_components_ui_navigation_menu_navigationmenu",
+      "frontend_src_app_components_ui_navigation_menu_navigationmenucontent",
+      "frontend_src_app_components_ui_navigation_menu_navigationmenuindicator",
+      "frontend_src_app_components_ui_navigation_menu_navigationmenuitem",
+      "frontend_src_app_components_ui_navigation_menu_navigationmenulink",
+      "frontend_src_app_components_ui_navigation_menu_navigationmenulist",
+      "frontend_src_app_components_ui_navigation_menu_navigationmenutrigger",
+      "frontend_src_app_components_ui_navigation_menu_navigationmenutriggerstyle",
+      "frontend_src_app_components_ui_navigation_menu_navigationmenuviewport"
+    ],
+    "31": [
+      "frontend_local_npm_package_tap_nyc_arg",
+      "frontend_local_npm_package_workspaces",
+      "ref_docs",
+      "ref_exclude",
+      "ref_mock_globals",
+      "ref_mock_registry",
+      "ref_smoke_tests",
+      "ref_tap_snapshots",
+      "ref_workspaces"
+    ],
+    "32": [
+      "frontend_local_npm_bin_npm_prefix",
+      "frontend_local_npm_bin_npm_prefix_config",
+      "frontend_local_npm_bin_npm_prefix_definitions_flatten_shorthands",
+      "frontend_local_npm_bin_npm_prefix_main",
+      "frontend_local_npm_bin_npm_prefix_path",
+      "frontend_local_npm_package_dependencies_npmcli_config",
+      "npmcli_config"
+    ],
+    "33": [
+      "frontend_local_npm_package_files",
+      "ref_bin",
+      "ref_docs_content",
+      "ref_docs_output",
+      "ref_index_js",
+      "ref_lib",
+      "ref_man"
+    ],
+    "34": [
+      "frontend_src_app_components_searchbar",
+      "frontend_src_app_components_searchbar_searchbar",
+      "frontend_src_app_components_ui_popover",
+      "frontend_src_app_components_ui_popover_popover",
+      "frontend_src_app_components_ui_popover_popoveranchor",
+      "frontend_src_app_components_ui_popover_popovercontent",
+      "frontend_src_app_components_ui_popover_popovertrigger"
+    ],
+    "35": [
+      "backend_init",
+      "backend_urls",
+      "backend_urls_rationale_1",
+      "backend_views",
+      "backend_views_home",
+      "backend_views_rationale_6"
+    ],
+    "36": [
+      "frontend_src_app_components_ui_tabs",
+      "frontend_src_app_components_ui_tabs_tabs",
+      "frontend_src_app_components_ui_tabs_tabscontent",
+      "frontend_src_app_components_ui_tabs_tabslist",
+      "frontend_src_app_components_ui_tabs_tabstrigger",
+      "frontend_src_app_pages_productdetail"
+    ],
+    "37": [
+      "frontend_local_npm_package_keywords",
+      "ref_install",
+      "ref_modules",
+      "ref_package_json",
+      "ref_package_manager"
+    ],
+    "38": [
+      "frontend_local_npm_package_tap",
+      "frontend_local_npm_package_tap_test_env",
+      "frontend_local_npm_package_tap_test_ignore",
+      "frontend_local_npm_package_tap_timeout",
+      "ref_lc_all_sk"
+    ],
+    "39": [
+      "frontend_src_app_components_ui_accordion",
+      "frontend_src_app_components_ui_accordion_accordion",
+      "frontend_src_app_components_ui_accordion_accordioncontent",
+      "frontend_src_app_components_ui_accordion_accordionitem",
+      "frontend_src_app_components_ui_accordion_accordiontrigger"
+    ],
+    "40": [
+      "frontend_src_app_components_ui_alert",
+      "frontend_src_app_components_ui_alert_alert",
+      "frontend_src_app_components_ui_alert_alertdescription",
+      "frontend_src_app_components_ui_alert_alerttitle",
+      "frontend_src_app_components_ui_alert_alertvariants"
+    ],
+    "41": [
+      "backend_settings_base",
+      "backend_settings_base_rationale_1",
+      "backend_settings_dev",
+      "backend_settings_production"
+    ],
+    "42": [
+      "frontend_local_npm_package_templateoss",
+      "frontend_local_npm_package_templateoss_content",
+      "frontend_local_npm_package_templateoss_npmcli_template_oss",
+      "frontend_local_npm_package_templateoss_version"
+    ],
+    "43": [
+      "accounts_apps",
+      "accounts_apps_accountsconfig",
+      "accounts_apps_py_appconfig"
+    ],
+    "44": [
+      "engagement_apps",
+      "engagement_apps_engagementconfig",
+      "engagement_apps_py_appconfig"
+    ],
+    "45": [
+      "frontend_local_npm_bin_npm__entry",
+      "frontend_local_npm_bin_npm_frontend_local_npm_bin_npm",
+      "frontend_local_npm_bin_npm_no_node_dir"
+    ],
+    "46": [
+      "frontend_local_npm_bin_npx__entry",
+      "frontend_local_npm_bin_npx_frontend_local_npm_bin_npx",
+      "frontend_local_npm_bin_npx_no_node_dir"
+    ],
+    "47": [
+      "frontend_local_npm_package_bin",
+      "frontend_local_npm_package_bin_npm",
+      "frontend_local_npm_package_bin_npx"
+    ],
+    "48": [
+      "frontend_local_npm_package_directories",
+      "frontend_local_npm_package_directories_doc",
+      "frontend_local_npm_package_directories_man"
+    ],
+    "49": [
+      "frontend_local_npm_package_repository",
+      "frontend_local_npm_package_repository_type",
+      "frontend_local_npm_package_repository_url"
+    ],
+    "50": [
+      "manage",
+      "manage_main",
+      "manage_rationale_8"
+    ],
+    "51": [
+      "orders_apps",
+      "orders_apps_ordersconfig",
+      "orders_apps_py_appconfig"
+    ],
+    "52": [
+      "products_apps",
+      "products_apps_productsconfig",
+      "products_apps_py_appconfig"
+    ],
+    "53": [
+      "abbrev",
+      "frontend_local_npm_package_dependencies_abbrev"
+    ],
+    "54": [
+      "accounts_migrations_0001_initial",
+      "accounts_migrations_0001_initial_migration"
+    ],
+    "55": [
+      "archy",
+      "frontend_local_npm_package_dependencies_archy"
+    ],
+    "56": [
+      "backend_asgi",
+      "backend_asgi_rationale_1"
+    ],
+    "57": [
+      "backend_wsgi",
+      "backend_wsgi_rationale_1"
+    ],
+    "58": [
+      "cacache",
+      "frontend_local_npm_package_dependencies_cacache"
+    ],
+    "59": [
+      "chalk",
+      "frontend_local_npm_package_dependencies_chalk"
+    ],
+    "60": [
+      "cli_columns",
+      "frontend_local_npm_package_dependencies_cli_columns"
+    ],
+    "61": [
+      "clsx",
+      "frontend_package_dependencies_clsx"
+    ],
+    "62": [
+      "cmdk",
+      "frontend_package_dependencies_cmdk"
+    ],
+    "63": [
+      "date_fns",
+      "frontend_package_dependencies_date_fns"
+    ],
+    "64": [
+      "embla_carousel_react",
+      "frontend_package_dependencies_embla_carousel_react"
+    ],
+    "65": [
+      "emotion_react",
+      "frontend_package_dependencies_emotion_react"
+    ],
+    "66": [
+      "engagement_migrations_0001_initial",
+      "engagement_migrations_0001_initial_migration"
+    ],
+    "67": [
+      "frontend_local_npm_bin_node_gyp_bin_node_gyp",
+      "frontend_local_npm_bin_node_gyp_bin_node_gyp__entry"
+    ],
+    "68": [
+      "frontend_local_npm_package_dependencies_fs_minipass",
+      "fs_minipass"
+    ],
+    "69": [
+      "frontend_local_npm_package_dependencies_graceful_fs",
+      "graceful_fs"
+    ],
+    "70": [
+      "frontend_local_npm_package_dependencies_hosted_git_info",
+      "hosted_git_info"
+    ],
+    "71": [
+      "frontend_local_npm_package_dependencies_init_package_json",
+      "init_package_json"
+    ],
+    "72": [
+      "frontend_local_npm_package_dependencies_is_cidr",
+      "is_cidr"
+    ],
+    "73": [
+      "frontend_local_npm_package_dependencies_isaacs_string_locale_compare",
+      "isaacs_string_locale_compare"
+    ],
+    "74": [
+      "frontend_local_npm_package_dependencies_libnpmdiff",
+      "libnpmdiff"
+    ],
+    "75": [
+      "frontend_local_npm_package_dependencies_libnpmfund",
+      "libnpmfund"
+    ],
+    "76": [
+      "frontend_local_npm_package_dependencies_libnpmhook",
+      "libnpmhook"
+    ],
+    "77": [
+      "frontend_local_npm_package_dependencies_libnpmorg",
+      "libnpmorg"
+    ],
+    "78": [
+      "frontend_local_npm_package_dependencies_libnpmpack",
+      "libnpmpack"
+    ],
+    "79": [
+      "frontend_local_npm_package_dependencies_libnpmpublish",
+      "libnpmpublish"
+    ],
+    "80": [
+      "frontend_local_npm_package_dependencies_libnpmsearch",
+      "libnpmsearch"
+    ],
+    "81": [
+      "frontend_local_npm_package_dependencies_libnpmversion",
+      "libnpmversion"
+    ],
+    "82": [
+      "frontend_local_npm_package_dependencies_make_fetch_happen",
+      "make_fetch_happen"
+    ],
+    "83": [
+      "frontend_local_npm_package_dependencies_minimatch",
+      "minimatch"
+    ],
+    "84": [
+      "frontend_local_npm_package_dependencies_minipass",
+      "minipass"
+    ],
+    "85": [
+      "frontend_local_npm_package_dependencies_nopt",
+      "nopt"
+    ],
+    "86": [
+      "frontend_local_npm_package_dependencies_normalize_package_data",
+      "normalize_package_data"
+    ],
+    "87": [
+      "frontend_local_npm_package_dependencies_npm_audit_report",
+      "npm_audit_report"
+    ],
+    "88": [
+      "frontend_local_npm_package_dependencies_npm_package_arg",
+      "npm_package_arg"
+    ],
+    "89": [
+      "frontend_local_npm_package_dependencies_npm_pick_manifest",
+      "npm_pick_manifest"
+    ],
+    "90": [
+      "frontend_local_npm_package_dependencies_npm_registry_fetch",
+      "npm_registry_fetch"
+    ],
+    "91": [
+      "frontend_local_npm_package_dependencies_npm_user_validate",
+      "npm_user_validate"
+    ],
+    "92": [
+      "frontend_local_npm_package_dependencies_npmcli_arborist",
+      "npmcli_arborist"
+    ],
+    "93": [
+      "frontend_local_npm_package_dependencies_npmcli_fs",
+      "npmcli_fs"
+    ],
+    "94": [
+      "frontend_local_npm_package_dependencies_npmcli_map_workspaces",
+      "npmcli_map_workspaces"
+    ],
+    "95": [
+      "frontend_local_npm_package_dependencies_npmcli_package_json",
+      "npmcli_package_json"
+    ],
+    "96": [
+      "frontend_local_npm_package_dependencies_npmcli_promise_spawn",
+      "npmcli_promise_spawn"
+    ],
+    "97": [
+      "frontend_local_npm_package_dependencies_npmcli_redact",
+      "npmcli_redact"
+    ],
+    "98": [
+      "frontend_local_npm_package_dependencies_npmcli_run_script",
+      "npmcli_run_script"
+    ],
+    "99": [
+      "frontend_local_npm_package_dependencies_pacote",
+      "pacote"
+    ],
+    "100": [
+      "frontend_local_npm_package_dependencies_parse_conflict_json",
+      "parse_conflict_json"
+    ],
+    "101": [
+      "frontend_local_npm_package_dependencies_proc_log",
+      "proc_log"
+    ],
+    "102": [
+      "frontend_local_npm_package_dependencies_qrcode_terminal",
+      "qrcode_terminal"
+    ],
+    "103": [
+      "frontend_local_npm_package_dependencies_read",
+      "read"
+    ],
+    "104": [
+      "frontend_local_npm_package_dependencies_semver",
+      "semver"
+    ],
+    "105": [
+      "frontend_local_npm_package_dependencies_tar",
+      "tar"
+    ],
+    "106": [
+      "frontend_local_npm_package_dependencies_text_table",
+      "text_table"
+    ],
+    "107": [
+      "frontend_local_npm_package_dependencies_tiny_relative_date",
+      "tiny_relative_date"
+    ],
+    "108": [
+      "frontend_local_npm_package_dependencies_validate_npm_package_name",
+      "validate_npm_package_name"
+    ],
+    "109": [
+      "frontend_local_npm_package_dependencies_which",
+      "which"
+    ],
+    "110": [
+      "frontend_local_npm_package_dependencies_write_file_atomic",
+      "write_file_atomic"
+    ],
+    "111": [
+      "frontend_package_dependencies_input_otp",
+      "input_otp"
+    ],
+    "112": [
+      "frontend_package_dependencies_motion",
+      "motion"
+    ],
+    "113": [
+      "frontend_package_dependencies_mui_icons_material",
+      "mui_icons_material"
+    ],
+    "114": [
+      "frontend_package_dependencies_mui_material",
+      "mui_material"
+    ],
+    "115": [
+      "frontend_package_dependencies_popperjs_core",
+      "popperjs_core"
+    ],
+    "116": [
+      "frontend_package_dependencies_radix_ui_react_accordion",
+      "radix_ui_react_accordion"
+    ],
+    "117": [
+      "frontend_package_dependencies_radix_ui_react_alert_dialog",
+      "radix_ui_react_alert_dialog"
+    ],
+    "118": [
+      "frontend_package_dependencies_radix_ui_react_aspect_ratio",
+      "radix_ui_react_aspect_ratio"
+    ],
+    "119": [
+      "frontend_package_dependencies_radix_ui_react_avatar",
+      "radix_ui_react_avatar"
+    ],
+    "120": [
+      "frontend_package_dependencies_radix_ui_react_checkbox",
+      "radix_ui_react_checkbox"
+    ],
+    "121": [
+      "frontend_package_dependencies_radix_ui_react_collapsible",
+      "radix_ui_react_collapsible"
+    ],
+    "122": [
+      "frontend_package_dependencies_radix_ui_react_context_menu",
+      "radix_ui_react_context_menu"
+    ],
+    "123": [
+      "frontend_package_dependencies_radix_ui_react_dialog",
+      "radix_ui_react_dialog"
+    ],
+    "124": [
+      "frontend_package_dependencies_radix_ui_react_dropdown_menu",
+      "radix_ui_react_dropdown_menu"
+    ],
+    "125": [
+      "frontend_package_dependencies_radix_ui_react_hover_card",
+      "radix_ui_react_hover_card"
+    ],
+    "126": [
+      "frontend_package_dependencies_radix_ui_react_label",
+      "radix_ui_react_label"
+    ],
+    "127": [
+      "frontend_package_dependencies_radix_ui_react_menubar",
+      "radix_ui_react_menubar"
+    ],
+    "128": [
+      "frontend_package_dependencies_radix_ui_react_navigation_menu",
+      "radix_ui_react_navigation_menu"
+    ],
+    "129": [
+      "frontend_package_dependencies_radix_ui_react_popover",
+      "radix_ui_react_popover"
+    ],
+    "130": [
+      "frontend_package_dependencies_radix_ui_react_progress",
+      "radix_ui_react_progress"
+    ],
+    "131": [
+      "frontend_package_dependencies_radix_ui_react_radio_group",
+      "radix_ui_react_radio_group"
+    ],
+    "132": [
+      "frontend_package_dependencies_radix_ui_react_scroll_area",
+      "radix_ui_react_scroll_area"
+    ],
+    "133": [
+      "frontend_package_dependencies_radix_ui_react_select",
+      "radix_ui_react_select"
+    ],
+    "134": [
+      "frontend_package_dependencies_radix_ui_react_separator",
+      "radix_ui_react_separator"
+    ],
+    "135": [
+      "frontend_package_dependencies_radix_ui_react_slider",
+      "radix_ui_react_slider"
+    ],
+    "136": [
+      "frontend_package_dependencies_radix_ui_react_slot",
+      "radix_ui_react_slot"
+    ],
+    "137": [
+      "frontend_package_dependencies_radix_ui_react_switch",
+      "radix_ui_react_switch"
+    ],
+    "138": [
+      "frontend_package_dependencies_radix_ui_react_tabs",
+      "radix_ui_react_tabs"
+    ],
+    "139": [
+      "frontend_package_dependencies_radix_ui_react_toggle_group",
+      "radix_ui_react_toggle_group"
+    ],
+    "140": [
+      "frontend_package_dependencies_radix_ui_react_tooltip",
+      "radix_ui_react_tooltip"
+    ],
+    "141": [
+      "frontend_package_dependencies_react_dnd",
+      "react_dnd"
+    ],
+    "142": [
+      "frontend_package_dependencies_react_dnd_html5_backend",
+      "react_dnd_html5_backend"
+    ],
+    "143": [
+      "frontend_package_dependencies_react_hook_form",
+      "react_hook_form"
+    ],
+    "144": [
+      "frontend_package_dependencies_react_popper",
+      "react_popper"
+    ],
+    "145": [
+      "frontend_package_dependencies_react_resizable_panels",
+      "react_resizable_panels"
+    ],
+    "146": [
+      "frontend_package_dependencies_react_responsive_masonry",
+      "react_responsive_masonry"
+    ],
+    "147": [
+      "frontend_package_dependencies_react_router",
+      "react_router"
+    ],
+    "148": [
+      "frontend_package_dependencies_react_slick",
+      "react_slick"
+    ],
+    "149": [
+      "frontend_package_dependencies_recharts",
+      "recharts"
+    ],
+    "150": [
+      "frontend_package_dependencies_sonner",
+      "sonner"
+    ],
+    "151": [
+      "frontend_package_dependencies_tailwind_merge",
+      "tailwind_merge"
+    ],
+    "152": [
+      "frontend_package_dependencies_tw_animate_css",
+      "tw_animate_css"
+    ],
+    "153": [
+      "frontend_package_dependencies_vaul",
+      "vaul"
+    ],
+    "154": [
+      "frontend_src_app_components_ui_aspect_ratio",
+      "frontend_src_app_components_ui_aspect_ratio_aspectratio"
+    ],
+    "155": [
+      "frontend_vite_config",
+      "frontend_vite_config_figmaassetresolver"
+    ],
+    "156": [
+      "orders_migrations_0001_initial",
+      "orders_migrations_0001_initial_migration"
+    ],
+    "157": [
+      "orders_migrations_0002_discountrule",
+      "orders_migrations_0002_discountrule_migration"
+    ],
+    "158": [
+      "orders_migrations_0003_alter_order_created_at_alter_order_status",
+      "orders_migrations_0003_alter_order_created_at_alter_order_status_migration"
+    ],
+    "159": [
+      "products_migrations_0001_initial",
+      "products_migrations_0001_initial_migration"
+    ],
+    "160": [
+      "products_migrations_0002_collection",
+      "products_migrations_0002_collection_migration"
+    ],
+    "161": [
+      "products_migrations_0003_add_related_products_m2m",
+      "products_migrations_0003_add_related_products_m2m_migration"
+    ],
+    "162": [
+      "products_migrations_0004_alter_product_brand_alter_product_finish_and_more",
+      "products_migrations_0004_alter_product_brand_alter_product_finish_and_more_migration"
+    ],
+    "163": [
+      "accounts_init"
+    ],
+    "164": [
+      "accounts_migrations_init"
+    ],
+    "165": [
+      "accounts_tests"
+    ],
+    "166": [
+      "backend_settings_init"
+    ],
+    "167": [
+      "copy_images"
+    ],
+    "168": [
+      "engagement_init"
+    ],
+    "169": [
+      "engagement_migrations_init"
+    ],
+    "170": [
+      "engagement_tests"
+    ],
+    "171": [
+      "frontend_local_npm_bin_npm_cli"
+    ],
+    "172": [
+      "frontend_local_npm_bin_npm_ps1_frontend_local_npm_bin_npm"
+    ],
+    "173": [
+      "frontend_local_npm_bin_npx_ps1_frontend_local_npm_bin_npx"
+    ],
+    "174": [
+      "frontend_local_npm_index"
+    ],
+    "175": [
+      "frontend_postcss_config"
+    ],
+    "176": [
+      "frontend_src_app_config"
+    ],
+    "177": [
+      "orders_init"
+    ],
+    "178": [
+      "orders_migrations_init"
+    ],
+    "179": [
+      "orders_tests"
+    ],
+    "180": [
+      "products_init"
+    ],
+    "181": [
+      "products_management_commands_init"
+    ],
+    "182": [
+      "products_management_init"
+    ],
+    "183": [
+      "products_migrations_init"
+    ],
+    "184": [
+      "products_tests"
+    ]
+  },
+  "cohesion": {
+    "0": 0.11921458625525946,
+    "1": 0.0963855421686747,
+    "2": 0.07171717171717172,
+    "3": 0.11614401858304298,
+    "4": 0.04878048780487805,
+    "5": 0.06882591093117409,
+    "6": 0.07226890756302522,
+    "7": 0.12688172043010754,
+    "8": 0.16551724137931034,
+    "9": 0.06666666666666667,
+    "10": 0.11264367816091954,
+    "11": 0.150997150997151,
+    "12": 0.14666666666666667,
+    "13": 0.12318840579710146,
+    "14": 0.09782608695652174,
+    "15": 0.20476190476190476,
+    "16": 0.1,
+    "17": 0.1,
+    "18": 0.12105263157894737,
+    "19": 0.11764705882352941,
+    "20": 0.125,
+    "21": 0.14285714285714285,
+    "22": 0.1978021978021978,
+    "23": 0.15384615384615385,
+    "24": 0.24242424242424243,
+    "25": 0.22727272727272727,
+    "26": 0.2545454545454545,
+    "27": 0.18181818181818182,
+    "28": 0.18181818181818182,
+    "29": 0.2,
+    "30": 0.2222222222222222,
+    "31": 0.3333333333333333,
+    "32": 0.3333333333333333,
+    "33": 0.2857142857142857,
+    "34": 0.42857142857142855,
+    "35": 0.3333333333333333,
+    "36": 0.6,
+    "37": 0.4,
+    "38": 0.4,
+    "39": 0.4,
+    "40": 0.5,
+    "41": 0.5,
+    "42": 0.5,
+    "43": 0.6666666666666666,
+    "44": 0.6666666666666666,
+    "45": 1.0,
+    "46": 1.0,
+    "47": 0.6666666666666666,
+    "48": 0.6666666666666666,
+    "49": 0.6666666666666666,
+    "50": 0.6666666666666666,
+    "51": 0.6666666666666666,
+    "52": 0.6666666666666666,
+    "53": 1.0,
+    "54": 1.0,
+    "55": 1.0,
+    "56": 1.0,
+    "57": 1.0,
+    "58": 1.0,
+    "59": 1.0,
+    "60": 1.0,
+    "61": 1.0,
+    "62": 1.0,
+    "63": 1.0,
+    "64": 1.0,
+    "65": 1.0,
+    "66": 1.0,
+    "67": 1.0,
+    "68": 1.0,
+    "69": 1.0,
+    "70": 1.0,
+    "71": 1.0,
+    "72": 1.0,
+    "73": 1.0,
+    "74": 1.0,
+    "75": 1.0,
+    "76": 1.0,
+    "77": 1.0,
+    "78": 1.0,
+    "79": 1.0,
+    "80": 1.0,
+    "81": 1.0,
+    "82": 1.0,
+    "83": 1.0,
+    "84": 1.0,
+    "85": 1.0,
+    "86": 1.0,
+    "87": 1.0,
+    "88": 1.0,
+    "89": 1.0,
+    "90": 1.0,
+    "91": 1.0,
+    "92": 1.0,
+    "93": 1.0,
+    "94": 1.0,
+    "95": 1.0,
+    "96": 1.0,
+    "97": 1.0,
+    "98": 1.0,
+    "99": 1.0,
+    "100": 1.0,
+    "101": 1.0,
+    "102": 1.0,
+    "103": 1.0,
+    "104": 1.0,
+    "105": 1.0,
+    "106": 1.0,
+    "107": 1.0,
+    "108": 1.0,
+    "109": 1.0,
+    "110": 1.0,
+    "111": 1.0,
+    "112": 1.0,
+    "113": 1.0,
+    "114": 1.0,
+    "115": 1.0,
+    "116": 1.0,
+    "117": 1.0,
+    "118": 1.0,
+    "119": 1.0,
+    "120": 1.0,
+    "121": 1.0,
+    "122": 1.0,
+    "123": 1.0,
+    "124": 1.0,
+    "125": 1.0,
+    "126": 1.0,
+    "127": 1.0,
+    "128": 1.0,
+    "129": 1.0,
+    "130": 1.0,
+    "131": 1.0,
+    "132": 1.0,
+    "133": 1.0,
+    "134": 1.0,
+    "135": 1.0,
+    "136": 1.0,
+    "137": 1.0,
+    "138": 1.0,
+    "139": 1.0,
+    "140": 1.0,
+    "141": 1.0,
+    "142": 1.0,
+    "143": 1.0,
+    "144": 1.0,
+    "145": 1.0,
+    "146": 1.0,
+    "147": 1.0,
+    "148": 1.0,
+    "149": 1.0,
+    "150": 1.0,
+    "151": 1.0,
+    "152": 1.0,
+    "153": 1.0,
+    "154": 1.0,
+    "155": 1.0,
+    "156": 1.0,
+    "157": 1.0,
+    "158": 1.0,
+    "159": 1.0,
+    "160": 1.0,
+    "161": 1.0,
+    "162": 1.0,
+    "163": 1.0,
+    "164": 1.0,
+    "165": 1.0,
+    "166": 1.0,
+    "167": 1.0,
+    "168": 1.0,
+    "169": 1.0,
+    "170": 1.0,
+    "171": 1.0,
+    "172": 1.0,
+    "173": 1.0,
+    "174": 1.0,
+    "175": 1.0,
+    "176": 1.0,
+    "177": 1.0,
+    "178": 1.0,
+    "179": 1.0,
+    "180": 1.0,
+    "181": 1.0,
+    "182": 1.0,
+    "183": 1.0,
+    "184": 1.0
+  },
+  "gods": [
+    {
+      "id": "frontend_src_app_components_ui_utils_cn",
+      "label": "cn()",
+      "degree": 221
+    },
+    {
+      "id": "orders_models_order",
+      "label": "Order",
+      "degree": 41
+    },
+    {
+      "id": "orders_models_discountrule",
+      "label": "DiscountRule",
+      "degree": 41
+    },
+    {
+      "id": "orders_models_cartitem",
+      "label": "CartItem",
+      "degree": 40
+    },
+    {
+      "id": "products_models_product",
+      "label": "Product",
+      "degree": 40
+    },
+    {
+      "id": "orders_models_orderitem",
+      "label": "OrderItem",
+      "degree": 39
+    },
+    {
+      "id": "frontend_src_app_utils_api_apifetch",
+      "label": "apiFetch()",
+      "degree": 38
+    },
+    {
+      "id": "orders_models_cart",
+      "label": "Cart",
+      "degree": 38
+    },
+    {
+      "id": "orders_models_returnrequest",
+      "label": "ReturnRequest",
+      "degree": 38
+    },
+    {
+      "id": "products_models_collection",
+      "label": "Collection",
+      "degree": 37
+    }
+  ],
+  "surprises": [
+    {
+      "source": "CustomerProfileSerializer",
+      "target": "CustomerProfile",
+      "source_files": [
+        "accounts/serializers.py",
+        "accounts/models.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "uses",
+      "why": "inferred connection - not explicitly stated in source; bridges separate communities; peripheral node `CustomerProfileSerializer` unexpectedly reaches hub `CustomerProfile`"
+    },
+    {
+      "source": "Meta",
+      "target": "CustomerProfile",
+      "source_files": [
+        "accounts/serializers.py",
+        "accounts/models.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "uses",
+      "why": "inferred connection - not explicitly stated in source; bridges separate communities; peripheral node `Meta` unexpectedly reaches hub `CustomerProfile`"
+    },
+    {
+      "source": "AdminAbandonedCartsAPIView",
+      "target": "CustomerProfile",
+      "source_files": [
+        "orders/views.py",
+        "accounts/models.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "uses",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories"
+    },
+    {
+      "source": "AdminAnalyticsAPIView",
+      "target": "CustomerProfile",
+      "source_files": [
+        "orders/views.py",
+        "accounts/models.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "uses",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories"
+    },
+    {
+      "source": "AdminDashboardStatsView",
+      "target": "CustomerProfile",
+      "source_files": [
+        "orders/views.py",
+        "accounts/models.py"
+      ],
+      "confidence": "INFERRED",
+      "relation": "uses",
+      "why": "inferred connection - not explicitly stated in source; connects across different repos/directories"
+    }
+  ],
+  "tokens": {
+    "input": 0,
+    "output": 0
+  }
+}

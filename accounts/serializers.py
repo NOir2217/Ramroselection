@@ -2,9 +2,20 @@ from rest_framework import serializers
 from django.contrib.auth.models import User
 from django.contrib.auth.password_validation import validate_password
 from django.core.exceptions import ValidationError as DjangoValidationError
-from .models import CustomerProfile
+from django.core.validators import RegexValidator
+from .models import CustomerProfile, Address
+
+_phone_validator = RegexValidator(
+    regex=r'^[\d\s\+\-\(\)]*$',
+    message='Phone number may only contain digits, spaces, +, -, (, and ).'
+)
 
 class CustomerProfileSerializer(serializers.ModelSerializer):
+    phone = serializers.CharField(
+        max_length=20, required=False, allow_blank=True, allow_null=True,
+        validators=[_phone_validator],
+    )
+
     class Meta:
         model = CustomerProfile
         fields = ('id', 'email', 'default_size', 'skin_type', 'is_vip', 'phone')
@@ -62,3 +73,10 @@ class RegisterSerializer(serializers.ModelSerializer):
         )
         CustomerProfile.objects.create(user=user, email=validated_data['email'])
         return user
+
+class AddressSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Address
+        fields = ('id', 'full_name', 'phone', 'street', 'city', 'postal_code', 'country', 'is_default')
+        read_only_fields = ('id',)
+

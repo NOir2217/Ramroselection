@@ -4,7 +4,7 @@ import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { toast } from "sonner";
 import { Link, useNavigate } from "react-router";
-import { API_BASE_URL } from "@/config";
+import { apiFetch } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 import { useCart } from "../context/CartContext";
 
@@ -45,7 +45,7 @@ export function Checkout() {
 
   const onSubmit = (data: any) => {
     setLoading(true);
-    fetch(`${API_BASE_URL}/api/checkout/`, {
+    apiFetch("/api/checkout/", {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       credentials: 'include', // Ensure cart_token cookie is transmitted

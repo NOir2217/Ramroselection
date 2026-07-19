@@ -7,7 +7,6 @@ import { Star, Heart } from "lucide-react";
 import { apiFetch } from "../utils/api";
 import { useAuth } from "../context/AuthContext";
 import { ProductCarousel } from "../components/ProductCarousel";
-import { API_BASE_URL } from "@/config";
 import { useCart } from "../context/CartContext";
 import { useWishlist } from "../context/WishlistContext";
 
@@ -26,7 +25,7 @@ export function ProductDetail() {
   const [activeImage, setActiveImage] = useState<string>("");
 
   useEffect(() => {
-    fetch(`${API_BASE_URL}/api/products/${slug}/`)
+    apiFetch(`/api/products/${slug}/`)
       .then((res) => res.json())
       .then((data) => {
         setProduct(data);

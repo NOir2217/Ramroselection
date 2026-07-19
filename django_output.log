@@ -1,0 +1,1 @@
+CommandError: You must set settings.ALLOWED_HOSTS if DEBUG is False.

@@ -1,5 +1,16 @@
+import { API_BASE_URL } from "@/config";
+
 let isRefreshing = false;
 let failedQueue: any[] = [];
+let memoryAccessToken: string | null = null;
+
+export function setAccessTokenInMemory(token: string | null) {
+  memoryAccessToken = token;
+}
+
+export function getAccessTokenInMemory(): string | null {
+  return memoryAccessToken;
+}
 
 const processQueue = (error: Error | null, token: string | null = null) => {
   failedQueue.forEach(prom => {
@@ -15,25 +26,39 @@ const processQueue = (error: Error | null, token: string | null = null) => {
 
 /**
  * Custom fetch wrapper that acts as an interceptor.
- * If a request fails with 401, it attempts to refresh the token and retry.
+ * Automatically attaches the in-memory access token as a Bearer header,
+ * includes credentials for CORS cookie transmission, and handles 401 refresh retries.
  */
 export async function apiFetch(url: string, options: RequestInit = {}): Promise<Response> {
-  const token = localStorage.getItem("access_token"); // If we stored it here. But AuthContext holds it in state.
-  // Actually, since cookies are HttpOnly, we don't need to manually attach the refresh token.
-  // The access token SHOULD be attached as a Bearer token if we stored it. 
-  // Wait, our backend looks for standard SimpleJWT Bearer headers.
-  // Since we hold the access token in React state (AuthContext), the cleanest way is for AuthContext to expose a `useApi()` hook.
+  const token = getAccessTokenInMemory();
   
-  // For a generic wrapper, we can just do the 401 retry logic.
-  let response = await fetch(url, options);
+  const headers = new Headers(options.headers || {});
+  if (token && !headers.has("Authorization")) {
+    headers.set("Authorization", `Bearer ${token}`);
+  }
+  
+  const mergedOptions: RequestInit = {
+    ...options,
+    headers,
+    credentials: "include",
+  };
 
-  if (response.status === 401) {
+  let response = await fetch(url.startsWith("http") ? url : `${API_BASE_URL}${url}`, mergedOptions);
+
+  if (response.status === 401 && !url.includes("/api/auth/token/refresh/")) {
     if (isRefreshing) {
       return new Promise<Response>(function(resolve, reject) {
         failedQueue.push({ resolve, reject });
-      }).then(token => {
-        // Retry with new token (if we had to attach it, we would modify headers here)
-        return fetch(url, options);
+      }).then(newToken => {
+        const retryHeaders = new Headers(options.headers || {});
+        if (newToken) {
+          retryHeaders.set("Authorization", `Bearer ${newToken}`);
+        }
+        return fetch(url.startsWith("http") ? url : `${API_BASE_URL}${url}`, {
+          ...options,
+          headers: retryHeaders,
+          credentials: "include",
+        });
       }).catch(err => {
         return Promise.reject(err);
       });
@@ -42,21 +67,29 @@ export async function apiFetch(url: string, options: RequestInit = {}): Promise<
     isRefreshing = true;
 
     try {
-      const refreshRes = await fetch("/api/auth/token/refresh/", { method: "POST" });
+      const refreshRes = await fetch(`${API_BASE_URL}/api/auth/token/refresh/`, {
+        method: "POST",
+        credentials: "include",
+      });
       if (!refreshRes.ok) {
         throw new Error("Refresh failed");
       }
       
       const refreshData = await refreshRes.json();
-      // In a real app we'd dispatch this back to AuthContext, but the cookie is what matters for the refresh endpoint.
+      setAccessTokenInMemory(refreshData.access);
+      
       processQueue(null, refreshData.access);
       
-      // Retry the original request
-      // If we needed to pass the new access token in headers, we'd do it here.
-      response = await fetch(url, options);
+      const retryHeaders = new Headers(options.headers || {});
+      retryHeaders.set("Authorization", `Bearer ${refreshData.access}`);
+      response = await fetch(url.startsWith("http") ? url : `${API_BASE_URL}${url}`, {
+        ...options,
+        headers: retryHeaders,
+        credentials: "include",
+      });
     } catch (err: any) {
       processQueue(err, null);
-      // Force logout by redirecting or throwing
+      setAccessTokenInMemory(null);
       window.location.href = "/login";
     } finally {
       isRefreshing = false;

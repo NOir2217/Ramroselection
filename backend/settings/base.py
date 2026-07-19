@@ -111,6 +111,12 @@ SIMPLE_JWT = {
 # ─── Security headers (applied in all environments) ──────────────────────────
 X_FRAME_OPTIONS = 'DENY'
 SECURE_CONTENT_TYPE_NOSNIFF = True
+CORS_ALLOW_CREDENTIALS = True
+
+# ─── Media Files ──────────────────────────────────────────────────────────────
+MEDIA_URL = '/media/'
+MEDIA_ROOT = BASE_DIR / 'media'
+
 
 # ─── Custom admin URL (non-default to reduce attack surface) ─────────────────
 ADMIN_URL = config('ADMIN_URL', default='rs-admin-panel/')

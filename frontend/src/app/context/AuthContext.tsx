@@ -1,7 +1,6 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { useNavigate, useLocation } from "react-router";
-import { API_BASE_URL } from "@/config";
-import { setAccessTokenInMemory } from "../utils/api";
+import { setAccessTokenInMemory, apiFetch } from "../utils/api";
 
 interface User {
   id: number;
@@ -33,9 +32,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   useEffect(() => {
     let active = true;
 
-    fetch(`${API_BASE_URL}/api/auth/token/refresh/`, {
+    apiFetch("/api/auth/token/refresh/", {
       method: "POST",
-      credentials: "include",
     })
       .then(res => {
         if (!res.ok) throw new Error("No session");
@@ -78,12 +76,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const logout = async () => {
     try {
-      await fetch(`${API_BASE_URL}/api/auth/token/logout/`, { 
+      await apiFetch("/api/auth/token/logout/", { 
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${accessToken}`
-        },
-        credentials: "include"
       });
     } catch (e) {
       console.error("Logout error", e);

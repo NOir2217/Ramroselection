@@ -18,13 +18,28 @@ class WishlistAPIView(APIView):
         return session_key
 
     def get(self, request):
+        from django.db.models import Prefetch
+        from engagement.models import Review
+
+        base_qs = WishlistItem.objects.select_related(
+            'product', 'product__category'
+        ).prefetch_related(
+            'product__variants',
+            'product__product_images',
+            Prefetch(
+                'product__reviews',
+                queryset=Review.objects.filter(is_approved=True).order_by('-created_at'),
+                to_attr='approved_reviews'
+            )
+        )
+
         if request.user.is_authenticated and hasattr(request.user, 'customerprofile'):
-            items = WishlistItem.objects.filter(customer=request.user.customerprofile)
+            items = base_qs.filter(customer=request.user.customerprofile)
         else:
             session_key = request.COOKIES.get('session_key')
             if not session_key:
                 return Response([])
-            items = WishlistItem.objects.filter(session_key=session_key)
+            items = base_qs.filter(session_key=session_key)
             
         serializer = WishlistItemSerializer(items, many=True)
         return Response(serializer.data)
@@ -104,12 +119,25 @@ class RecentlyViewedAPIView(APIView):
     def get(self, request):
         from .models import RecentlyViewed
         from products.serializers import ProductSerializer
+        from django.db.models import Prefetch
+        from engagement.models import Review
+
+        base_qs = RecentlyViewed.objects.select_related(
+            'product', 'product__category'
+        ).prefetch_related(
+            'product__variants',
+            'product__product_images',
+            Prefetch(
+                'product__reviews',
+                queryset=Review.objects.filter(is_approved=True).order_by('-created_at'),
+                to_attr='approved_reviews'
+            )
+        )
 
         if request.user.is_authenticated and hasattr(request.user, 'customerprofile'):
             entries = (
-                RecentlyViewed.objects
+                base_qs
                 .filter(customer=request.user.customerprofile)
-                .select_related('product')
                 .order_by('-viewed_at')[:10]
             )
         else:
@@ -117,9 +145,8 @@ class RecentlyViewedAPIView(APIView):
             if not session_key:
                 return Response([])
             entries = (
-                RecentlyViewed.objects
+                base_qs
                 .filter(session_key=session_key)
-                .select_related('product')
                 .order_by('-viewed_at')[:10]
             )
 

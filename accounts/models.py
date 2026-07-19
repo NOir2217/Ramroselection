@@ -2,7 +2,7 @@ from django.db import models
 from django.contrib.auth.models import User
 
 class CustomerProfile(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True, related_name='customer_profile')
+    user = models.OneToOneField(User, on_delete=models.CASCADE, null=True, blank=True, related_name='customerprofile')
     email = models.EmailField() # Not unique, to allow guests multiple checkouts with the same email if needed
     default_size = models.CharField(max_length=50, null=True, blank=True)
     skin_type = models.CharField(max_length=50, null=True, blank=True)

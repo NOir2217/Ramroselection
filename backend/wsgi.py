@@ -11,6 +11,10 @@ import os
 
 from django.core.wsgi import get_wsgi_application
 
-os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings.dev')
+if 'DJANGO_SETTINGS_MODULE' not in os.environ:
+    raise KeyError(
+        "The DJANGO_SETTINGS_MODULE environment variable is not set. "
+        "It must be explicitly defined in production (e.g. backend.settings.production)."
+    )
 
 application = get_wsgi_application()

@@ -1,4 +1,4 @@
-import { API_BASE_URL } from "@/config";
+import { apiFetch } from "../utils/api";
 import { useForm } from "react-hook-form";
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
@@ -23,7 +23,7 @@ export function Register() {
   const onSubmit = async (data: any) => {
     setLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/auth/register/`, {
+      const res = await apiFetch("/api/auth/register/", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({

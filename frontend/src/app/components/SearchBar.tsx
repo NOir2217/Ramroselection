@@ -3,6 +3,7 @@ import { Search } from "lucide-react";
 import { Input } from "./ui/input";
 import { Popover, PopoverContent, PopoverTrigger } from "./ui/popover";
 import { Link, useNavigate } from "react-router";
+import { apiFetch } from "../utils/api";
 
 export function SearchBar() {
   const [query, setQuery] = useState("");
@@ -20,7 +21,7 @@ export function SearchBar() {
   // Fetch results when debounced query changes
   useEffect(() => {
     if (debouncedQuery.length >= 2) {
-      fetch(`http://127.0.0.1:8000/api/products/search/?q=${debouncedQuery}`)
+      apiFetch(`/api/products/search/?q=${debouncedQuery}`)
         .then(res => res.json())
         .then(data => {
           setResults(data);
@@ -46,17 +47,17 @@ export function SearchBar() {
       <PopoverTrigger asChild>
         <form onSubmit={handleSearchSubmit} className="relative w-full max-w-sm flex-1 mx-4">
           <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-          <Input 
+          <Input
             value={query}
             onChange={(e) => setQuery(e.target.value)}
             onFocus={() => { if (results.length > 0) setOpen(true); }}
-            placeholder="Search products..." 
+            placeholder="Search products..."
             className="pl-10 bg-input-background"
           />
         </form>
       </PopoverTrigger>
-      <PopoverContent 
-        className="w-[var(--radix-popover-trigger-width)] p-0 mt-1" 
+      <PopoverContent
+        className="w-[var(--radix-popover-trigger-width)] p-0 mt-1"
         align="start"
         onOpenAutoFocus={(e) => e.preventDefault()} // Prevent stealing focus back
       >
@@ -66,14 +67,14 @@ export function SearchBar() {
           ) : (
             <>
               {results.map((product) => (
-                <Link 
+                <Link
                   key={product.id}
                   to={`/product/${product.slug}`}
                   onClick={() => setOpen(false)}
                   className="flex items-center gap-3 p-3 hover:bg-muted transition-colors border-b last:border-0"
                 >
-                  <img 
-                    src={product.image || "https://placehold.co/50"} 
+                  <img
+                    src={product.image || "https://placehold.co/50"}
                     alt={product.name}
                     className="w-12 h-12 object-cover rounded-sm"
                   />
@@ -85,8 +86,8 @@ export function SearchBar() {
                 </Link>
               ))}
               <div className="p-2 border-t bg-muted/30">
-                <Button 
-                  variant="ghost" 
+                <Button
+                  variant="ghost"
                   className="w-full text-sm text-primary"
                   onClick={() => {
                     setOpen(false);

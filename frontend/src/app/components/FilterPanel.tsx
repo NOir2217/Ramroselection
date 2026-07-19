@@ -13,7 +13,7 @@ interface FilterPanelProps {
 }
 
 const mainCategories = [
-  { id: "clothing", label: "Clothing" },
+  { id: "bags", label: "Bags" },
   { id: "cosmetics", label: "Cosmetics" },
 ];
 
@@ -26,6 +26,8 @@ export function FilterPanel({ onClose, isMobile = false }: FilterPanelProps) {
     skin_type: true,
     finish: true,
     ingredients: true,
+    material: true,
+    closure_type: true,
   });
 
   const category = searchParams.get("category");
@@ -35,6 +37,8 @@ export function FilterPanel({ onClose, isMobile = false }: FilterPanelProps) {
   const finishParam = searchParams.get("finish");
   const isVegan = searchParams.get("is_vegan") === "true";
   const isCrueltyFree = searchParams.get("is_cruelty_free") === "true";
+  const materialParam = searchParams.get("material");
+  const closureTypeParam = searchParams.get("closure_type");
 
   const toggleSection = (section: string) => {
     setOpenSections(prev => ({
@@ -111,8 +115,8 @@ export function FilterPanel({ onClose, isMobile = false }: FilterPanelProps) {
           </CollapsibleContent>
         </Collapsible>
 
-        {/* Clothing Filters */}
-        {(!category || category === "clothing") && (
+        {/* Bags Filters */}
+        {(!category || category === "bags") && (
           <>
             <Collapsible open={openSections.size} onOpenChange={() => toggleSection('size')}>
               <CollapsibleTrigger asChild>
@@ -122,7 +126,7 @@ export function FilterPanel({ onClose, isMobile = false }: FilterPanelProps) {
                 </Button>
               </CollapsibleTrigger>
               <CollapsibleContent className="mt-3 flex flex-wrap gap-2">
-                {['S', 'M', 'L', 'XL'].map((s) => (
+                {['Small', 'Medium', 'Large'].map((s) => (
                   <Button 
                     key={s} 
                     variant={sizeParam === s ? 'default' : 'outline'} 
@@ -143,7 +147,7 @@ export function FilterPanel({ onClose, isMobile = false }: FilterPanelProps) {
                 </Button>
               </CollapsibleTrigger>
               <CollapsibleContent className="mt-3 flex flex-wrap gap-2">
-                {['Black', 'White', 'Red', 'Blue'].map((c) => (
+                {['Black', 'Brown', 'Tan', 'Red', 'Gold', 'Burgundy', 'Beige'].map((c) => (
                   <Button 
                     key={c} 
                     variant={colorParam === c ? 'default' : 'outline'} 
@@ -152,6 +156,48 @@ export function FilterPanel({ onClose, isMobile = false }: FilterPanelProps) {
                   >
                     {c}
                   </Button>
+                ))}
+              </CollapsibleContent>
+            </Collapsible>
+
+            <Collapsible open={openSections.material} onOpenChange={() => toggleSection('material')}>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" className="w-full justify-between p-0 h-auto">
+                  <span>Material</span>
+                  <ChevronDown className={`h-4 w-4 transition-transform ${openSections.material ? 'rotate-180' : ''}`} />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="mt-3 space-y-3">
+                {['Leather', 'Canvas', 'Satin', 'Velvet'].map((m) => (
+                  <div key={m} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`m-${m}`}
+                      checked={materialParam === m.toLowerCase()}
+                      onCheckedChange={(checked) => updateParam("material", checked ? m.toLowerCase() : null)}
+                    />
+                    <label htmlFor={`m-${m}`} className="text-sm cursor-pointer">{m}</label>
+                  </div>
+                ))}
+              </CollapsibleContent>
+            </Collapsible>
+
+            <Collapsible open={openSections.closure_type} onOpenChange={() => toggleSection('closure_type')}>
+              <CollapsibleTrigger asChild>
+                <Button variant="ghost" className="w-full justify-between p-0 h-auto">
+                  <span>Closure Type</span>
+                  <ChevronDown className={`h-4 w-4 transition-transform ${openSections.closure_type ? 'rotate-180' : ''}`} />
+                </Button>
+              </CollapsibleTrigger>
+              <CollapsibleContent className="mt-3 space-y-3">
+                {['Zipper', 'Magnetic'].map((ct) => (
+                  <div key={ct} className="flex items-center space-x-2">
+                    <Checkbox
+                      id={`ct-${ct}`}
+                      checked={closureTypeParam === ct.toLowerCase()}
+                      onCheckedChange={(checked) => updateParam("closure_type", checked ? ct.toLowerCase() : null)}
+                    />
+                    <label htmlFor={`ct-${ct}`} className="text-sm cursor-pointer">{ct}</label>
+                  </div>
                 ))}
               </CollapsibleContent>
             </Collapsible>

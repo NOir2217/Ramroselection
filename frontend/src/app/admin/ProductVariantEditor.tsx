@@ -283,7 +283,7 @@ export function ProductVariantEditor() {
                   Add New Variant
                 </h3>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-                  {selectedProduct?.productType === "clothing" ? (
+                  {selectedProduct?.productType === "clothing" || selectedProduct?.productType === "bags" ? (
                     <>
                       <Input placeholder="Size (S/M/L)" value={newVariant.size} onChange={(e) => setNewVariant({ ...newVariant, size: e.target.value })} />
                       <Input placeholder="Color" value={newVariant.color} onChange={(e) => setNewVariant({ ...newVariant, color: e.target.value })} />
