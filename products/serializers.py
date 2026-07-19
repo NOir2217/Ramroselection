@@ -3,9 +3,25 @@ from .models import Product, ProductVariant, ProductImage, SizeGuide, Category, 
 from engagement.models import Review
 
 class ProductVariantSerializer(serializers.ModelSerializer):
+    """Full variant serializer — internal use only (admin panel, orders/cart).
+    Includes inventory fields (stock, batch, expiration) that should never
+    reach the public storefront API."""
     class Meta:
         model = ProductVariant
         fields = '__all__'
+        read_only_fields = ('product',)
+
+
+class ProductVariantPublicSerializer(serializers.ModelSerializer):
+    """Storefront-safe variant serializer — excludes internal inventory data
+    (batch_number, expiration_date, low_stock_threshold, sku_suffix) that
+    anonymous API callers should not be able to see."""
+    class Meta:
+        model = ProductVariant
+        fields = (
+            'id', 'product', 'variant_type', 'size', 'color', 'color_hex',
+            'shade', 'shade_hex', 'volume', 'stock_quantity', 'extra_price',
+        )
         read_only_fields = ('product',)
 
 class ProductImageSerializer(serializers.ModelSerializer):
@@ -46,15 +62,30 @@ class CategorySerializer(serializers.ModelSerializer):
         fields = ('id', 'name', 'slug')
 
 class ProductSerializer(serializers.ModelSerializer):
+    """Public storefront product serializer. Deliberately excludes `sku`
+    (internal-only identifier) and nests ProductVariantPublicSerializer
+    instead of the full variant serializer, so batch_number,
+    expiration_date, low_stock_threshold, and sku_suffix never reach
+    anonymous API callers. The admin panel uses its own views/serializers
+    (AdminProductListAPIView, ProductVariantSerializer) which still expose
+    the full field set to authenticated staff only."""
     category = CategorySerializer(read_only=True)
-    variants = ProductVariantSerializer(many=True, read_only=True)
+    variants = ProductVariantPublicSerializer(many=True, read_only=True)
     images = ProductImageSerializer(source='product_images', many=True, read_only=True)
     reviews = serializers.SerializerMethodField()
     sizeGuide = serializers.SerializerMethodField()
 
     class Meta:
         model = Product
-        fields = '__all__'
+        fields = (
+            'id', 'name', 'price', 'original_price', 'rating', 'review_count',
+            'image', 'category', 'is_new', 'is_sale', 'sale_percentage',
+            'description', 'brand', 'product_type', 'material_or_ingredients',
+            'is_vegan', 'is_cruelty_free', 'is_hypoallergenic', 'season',
+            'fit', 'skin_type', 'finish', 'closure_type', 'material',
+            'slug', 'related_products', 'variants', 'images', 'reviews',
+            'sizeGuide',
+        )
 
     def to_representation(self, instance):
         rep = super().to_representation(instance)
