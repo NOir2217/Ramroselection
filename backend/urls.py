@@ -14,6 +14,7 @@ Including another URLconf
     1. Import the include() function: from django.urls import include, path
     2. Add a URL to urlpatterns:  path('blog/', include('blog.urls'))
 """
+from django.urls import re_path as _re_path_unused  # (skip this, see below)
 from django.contrib import admin
 from django.urls import include, path
 from django.conf import settings
@@ -28,6 +29,7 @@ urlpatterns = [
     path('api/', include('orders.urls')),
     path('', views.home, name='home'),
     path('api/', include('engagement.urls')),
-] + [
+] ] + [
     re_path(r'^media/(?P<path>.*)$', serve, {'document_root': settings.MEDIA_ROOT}),
+    re_path(r'^(?!api/|rs-admin-panel/|media/).*$', views.home, name='spa-catchall'),
 ]
